@@ -13,7 +13,8 @@ public class RegisterUserRequest
     public string Password { get; set; }
 }
 
-public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, IEncryptionService keyVaultService)
+public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, IEncryptionService keyVaultService,
+    CalendarService calendarService)
     : Endpoint<RegisterUserRequest, RegisterUserResponse>
 {
     public override void Configure()
@@ -45,6 +46,7 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
             await db.SaveChangesAsync(c);
             await Send.ResponseAsync(
                 new RegisterUserResponse { UserId = user.Id }, 200, c);
+            _ = Task.Run(async () => await calendarService.RefreshCalendarEventsAsync(user.Id, CancellationToken.None), CancellationToken.None);
         }
         else
         {

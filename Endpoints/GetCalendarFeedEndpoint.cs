@@ -14,10 +14,7 @@ public class GetCalendarFeedRequest
 
 public class GetCalendarFeedEndpoint(
     ApplicationDbContext db,
-    CalendarService calendarService,
-    ILogger<GetCalendarFeedEndpoint> logger,
-    IEncryptionService keyVaultService,
-    IServiceScopeFactory scopeFactory)
+    CalendarService calendarService)
     : Endpoint<GetCalendarFeedRequest>
 {
     
@@ -57,37 +54,7 @@ public class GetCalendarFeedEndpoint(
         // If needed, refresh data in the background
         if (needsRefresh)
         {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    using var scope = scopeFactory.CreateScope();
-                    var scopedDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                    var scopedApiService = scope.ServiceProvider.GetRequiredService<MauriaApiService>();
-                    // Reload user
-                    var scopedUser = await scopedDb.Users.Include(u => u.Planning).FirstOrDefaultAsync(u => u.Id == r.UserId, CancellationToken.None);
-                    if (scopedUser == null) return;
-                    var events = await scopedApiService.GetPlanningAsync(scopedUser.JuniaEmail, await keyVaultService.DecryptAsync(scopedUser.JuniaPassword, CancellationToken.None), CancellationToken.None);
-                    await scopedDb.CalendarEvents.Where(e => e.User.Id == scopedUser.Id).ExecuteDeleteAsync(CancellationToken.None);
-                    if (events is { Success: true, Data: not null })
-                    {
-                        scopedUser.Planning = events.Data?.Select(e => new Entities.CalendarEvent
-                        {
-                            Id = e.Id,
-                            Title = e.Title,
-                            Start = e.Start.ToUniversalTime(),
-                            End = e.End.ToUniversalTime(),
-                            ClassName = e.ClassName,
-                        }).ToList()!;
-                        scopedUser.LastUpdate = DateTime.Now.ToUniversalTime();
-                        await scopedDb.SaveChangesAsync(CancellationToken.None);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Erreur lors du rafraîchissement asynchrone du planning pour l'utilisateur {UserId}", r.UserId);
-                }
-            }, c);
+            _ = Task.Run(async () => await calendarService.RefreshCalendarEventsAsync(r.UserId, CancellationToken.None), CancellationToken.None);
         }
     }
 }
