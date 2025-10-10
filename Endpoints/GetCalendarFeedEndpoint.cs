@@ -1,6 +1,7 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Services;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace AurionCal.Api.Endpoints;
 
@@ -19,8 +20,6 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
         AllowAnonymous();
         Get("/api/calendar/{UserId:guid}/{Token:guid}.ics");
     }
-
-    private readonly MauriaApiService _apiService = apiService;
     
     public override async Task HandleAsync(GetCalendarFeedRequest r, CancellationToken c)
     {
@@ -31,11 +30,11 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
             return;
         }
 
-        if (!user.LastUpdate.HasValue || (DateTime.Now - user.LastUpdate.Value).TotalHours > 1)
+        if (!user.LastUpdate.HasValue || (DateTime.Now.ToUniversalTime() - user.LastUpdate.Value).TotalHours > 1)
         {
             // TODO gestion jobs alim bdd
-            var events = await _apiService.GetPlanningAsync(user.JuniaEmail, user.JuniaPassword, c);
-            // await db.CalendarEvents.Where(e => e.UserId == user.Id).ExecuteDeleteAsync(c);
+            var events = await apiService.GetPlanningAsync(user.JuniaEmail, user.JuniaPassword, c);
+            await db.CalendarEvents.Where(e => e.User.Id == user.Id).ExecuteDeleteAsync(c);
             if (events != null)
             {
                 user.Planning = events.Data?.Select(e => new Entities.CalendarEvent
@@ -45,12 +44,13 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
                     Start = e.Start.ToUniversalTime(),
                     End = e.End.ToUniversalTime(),
                     ClassName = e.ClassName,
-                }).ToList()!;                
-                //user.LastUpdate = DateTime.Now;
+                }).ToList()!;
+                user.LastUpdate = DateTime.Now.ToUniversalTime();
                 await db.SaveChangesAsync(c);
             }
         }
 
+        await db.Entry(user).Collection(u => u.Planning).LoadAsync(c);
         var planningEvents = user.Planning?.Select(e => new Entities.CalendarEvent
         {
             Id = e.Id,
@@ -62,7 +62,6 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
         
         var feed = calendarService.GenerateCalendarFeed(planningEvents);
         
-
         HttpContext.Response.Headers.Append("Content-Disposition", "attachment; filename=\"calendar.ics\"");
         HttpContext.Response.ContentType = "text/calendar";
         await Send.StringAsync(feed, 200, "text/calendar", c);
