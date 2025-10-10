@@ -1,6 +1,7 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Entities;
 using AurionCal.Api.Services;
+using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,7 +13,7 @@ public class RegisterUserRequest
     public string Password { get; set; }
 }
 
-public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, KeyVaultService keyVaultService)
+public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, IEncryptionService keyVaultService)
     : Endpoint<RegisterUserRequest, RegisterUserResponse>
 {
     public override void Configure()

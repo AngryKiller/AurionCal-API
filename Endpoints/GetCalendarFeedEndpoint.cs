@@ -1,5 +1,6 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Services;
+using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +16,7 @@ public class GetCalendarFeedEndpoint(
     ApplicationDbContext db,
     CalendarService calendarService,
     ILogger<GetCalendarFeedEndpoint> logger,
-    KeyVaultService keyVaultService,
+    IEncryptionService keyVaultService,
     IServiceScopeFactory scopeFactory)
     : Endpoint<GetCalendarFeedRequest>
 {
