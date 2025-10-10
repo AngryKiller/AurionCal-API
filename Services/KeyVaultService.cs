@@ -6,7 +6,7 @@ using AurionCal.Api.Services.Interfaces;
 
 namespace AurionCal.Api.Services;
 
-public class KeyVaultService : IEncryptionService
+public class KeyVaultService : IEncryptionService, IDisposable
 {
     private readonly IConfiguration _configuration;
     private readonly KeyClient _keyClient;
@@ -36,6 +36,11 @@ public class KeyVaultService : IEncryptionService
         var cryptoClient = new CryptographyClient(key.Id, _credential);
         var decryptResult = await cryptoClient.DecryptAsync(EncryptionAlgorithm.RsaOaep256, cipherText, c);
         return System.Text.Encoding.UTF8.GetString(decryptResult.Plaintext);
+    }
+
+    public void Dispose()
+    {
+        // TODO release managed resources here
     }
 
 }
