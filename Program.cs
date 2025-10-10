@@ -1,6 +1,7 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Initializers;
 using AurionCal.Api.Services;
+using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,8 @@ bld.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(bld.Configuration.GetConnectionString("ApplicationDbContext")));
 bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
-bld.Services.AddScoped<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
-bld.Services.AddScoped<KeyVaultService>();
+bld.Services.AddScoped<IEncryptionService, KeyVaultService>();
 bld.Services.AddFastEndpoints().SwaggerDocument();;
 
 var app = bld.Build();
