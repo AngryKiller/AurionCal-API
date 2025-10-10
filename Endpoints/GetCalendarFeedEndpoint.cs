@@ -11,7 +11,12 @@ public class GetCalendarFeedRequest
     public Guid Token { get; set; }
 }
 
-public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService apiService, CalendarService calendarService)
+public class GetCalendarFeedEndpoint(
+    ApplicationDbContext db,
+    MauriaApiService apiService,
+    CalendarService calendarService,
+    ILogger<GetCalendarFeedEndpoint> logger,
+    IServiceScopeFactory scopeFactory)
     : Endpoint<GetCalendarFeedRequest>
 {
     
@@ -30,26 +35,8 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
             return;
         }
 
-        if (!user.LastUpdate.HasValue || (DateTime.Now.ToUniversalTime() - user.LastUpdate.Value).TotalHours > 1)
-        {
-            // TODO gestion jobs alim bdd
-            var events = await apiService.GetPlanningAsync(user.JuniaEmail, user.JuniaPassword, c);
-            await db.CalendarEvents.Where(e => e.User.Id == user.Id).ExecuteDeleteAsync(c);
-            if (events != null)
-            {
-                user.Planning = events.Data?.Select(e => new Entities.CalendarEvent
-                {
-                    Id = e.Id,
-                    Title = e.Title,
-                    Start = e.Start.ToUniversalTime(),
-                    End = e.End.ToUniversalTime(),
-                    ClassName = e.ClassName,
-                }).ToList()!;
-                user.LastUpdate = DateTime.Now.ToUniversalTime();
-                await db.SaveChangesAsync(c);
-            }
-        }
-
+        bool needsRefresh = !user.LastUpdate.HasValue || (DateTime.Now.ToUniversalTime() - user.LastUpdate.Value).TotalHours > 1;
+        
         await db.Entry(user).Collection(u => u.Planning).LoadAsync(c);
         var planningEvents = user.Planning?.Select(e => new Entities.CalendarEvent
         {
@@ -59,11 +46,47 @@ public class GetCalendarFeedEndpoint(ApplicationDbContext db, MauriaApiService a
             End = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.End.DateTime, DateTimeKind.Utc), TimeZoneInfo.Local),
             ClassName = e.ClassName,
         }).ToList() ?? new List<Entities.CalendarEvent>();
-        
+
         var feed = calendarService.GenerateCalendarFeed(planningEvents);
-        
+
         HttpContext.Response.Headers.Append("Content-Disposition", "attachment; filename=\"calendar.ics\"");
         HttpContext.Response.ContentType = "text/calendar";
         await Send.StringAsync(feed, 200, "text/calendar", c);
+
+        // If needed, refresh data in the background
+        if (needsRefresh)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = scopeFactory.CreateScope();
+                    var scopedDb = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    var scopedApiService = scope.ServiceProvider.GetRequiredService<MauriaApiService>();
+                    // Reload user
+                    var scopedUser = await scopedDb.Users.Include(u => u.Planning).FirstOrDefaultAsync(u => u.Id == r.UserId, CancellationToken.None);
+                    if (scopedUser == null) return;
+                    var events = await scopedApiService.GetPlanningAsync(scopedUser.JuniaEmail, scopedUser.JuniaPassword, CancellationToken.None);
+                    await scopedDb.CalendarEvents.Where(e => e.User.Id == scopedUser.Id).ExecuteDeleteAsync(CancellationToken.None);
+                    if (events is { Success: true, Data: not null })
+                    {
+                        scopedUser.Planning = events.Data?.Select(e => new Entities.CalendarEvent
+                        {
+                            Id = e.Id,
+                            Title = e.Title,
+                            Start = e.Start.ToUniversalTime(),
+                            End = e.End.ToUniversalTime(),
+                            ClassName = e.ClassName,
+                        }).ToList()!;
+                        scopedUser.LastUpdate = DateTime.Now.ToUniversalTime();
+                        await scopedDb.SaveChangesAsync(CancellationToken.None);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Erreur lors du rafraîchissement asynchrone du planning pour l'utilisateur {UserId}", r.UserId);
+                }
+            }, c);
+        }
     }
 }
