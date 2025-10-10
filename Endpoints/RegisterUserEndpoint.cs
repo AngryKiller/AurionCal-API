@@ -12,7 +12,7 @@ public class RegisterUserRequest
     public string Password { get; set; }
 }
 
-public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService)
+public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, KeyVaultService keyVaultService)
     : Endpoint<RegisterUserRequest, RegisterUserResponse>
 {
     public override void Configure()
@@ -37,7 +37,7 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
             {
                 Id = Guid.NewGuid(),
                 JuniaEmail = r.Email,
-                JuniaPassword = r.Password,
+                JuniaPassword = await keyVaultService.EncryptAsync(r.Password, c),
                 CalendarToken = Guid.NewGuid()
             };
             db.Users.Add(user);

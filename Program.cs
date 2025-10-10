@@ -13,6 +13,7 @@ bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
 bld.Services.AddScoped<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
+bld.Services.AddScoped<KeyVaultService>();
 bld.Services.AddFastEndpoints().SwaggerDocument();;
 
 var app = bld.Build();

@@ -5,8 +5,7 @@ namespace AurionCal.Api.Services;
 
 public class CalendarService
 {
-
-
+    
     public string GenerateCalendarFeed(List<CalendarEvent> planningEvents)
     {
         var calendar = new Ical.Net.Calendar();

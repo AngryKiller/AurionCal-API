@@ -13,9 +13,9 @@ public class GetCalendarFeedRequest
 
 public class GetCalendarFeedEndpoint(
     ApplicationDbContext db,
-    MauriaApiService apiService,
     CalendarService calendarService,
     ILogger<GetCalendarFeedEndpoint> logger,
+    KeyVaultService keyVaultService,
     IServiceScopeFactory scopeFactory)
     : Endpoint<GetCalendarFeedRequest>
 {
@@ -66,7 +66,7 @@ public class GetCalendarFeedEndpoint(
                     // Reload user
                     var scopedUser = await scopedDb.Users.Include(u => u.Planning).FirstOrDefaultAsync(u => u.Id == r.UserId, CancellationToken.None);
                     if (scopedUser == null) return;
-                    var events = await scopedApiService.GetPlanningAsync(scopedUser.JuniaEmail, scopedUser.JuniaPassword, CancellationToken.None);
+                    var events = await scopedApiService.GetPlanningAsync(scopedUser.JuniaEmail, await keyVaultService.DecryptAsync(scopedUser.JuniaPassword, CancellationToken.None), CancellationToken.None);
                     await scopedDb.CalendarEvents.Where(e => e.User.Id == scopedUser.Id).ExecuteDeleteAsync(CancellationToken.None);
                     if (events is { Success: true, Data: not null })
                     {
