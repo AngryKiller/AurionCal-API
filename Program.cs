@@ -14,7 +14,7 @@ bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
 bld.Services.AddScoped<IEncryptionService, KeyVaultService>();
-bld.Services.AddFastEndpoints().SwaggerDocument();;
+bld.Services.AddFastEndpoints().SwaggerDocument();
 
 var app = bld.Build();
 using var scope = app.Services.CreateScope();
