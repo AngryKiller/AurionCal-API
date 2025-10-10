@@ -1,0 +1,37 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/aurion/planning"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "success": true,
+      "data": [
+        {
+          "id": "evt-1",
+          "title": "Cours A",
+          "start": "2025-10-10T08:00:00+0200",
+          "end": "2025-10-10T10:00:00+0200",
+          "allDay": false,
+          "editable": false,
+          "className": "Salle 101"
+        },
+        {
+          "id": "evt-2",
+          "title": "Cours B",
+          "start": "2025-10-11T13:00:00+0200",
+          "end": "2025-10-11T15:00:00+0200",
+          "allDay": false,
+          "editable": false,
+          "className": "Salle 202"
+        }
+      ]
+    }
+  }
+}
+
+

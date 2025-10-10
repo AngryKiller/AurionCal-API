@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: aurioncal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aurioncal
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mauria-mock:
+    image: wiremock/wiremock:3.7.0
+    container_name: aurioncal-mauria-mock
+    command: ["--port", "9000", "--verbose"]
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./mocks/mauria:/home/wiremock
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aurioncal-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
+      ApiSettings__BaseUrl: http://mauria-mock:9000
+      # KeyVault settings (To be uncommented when available)
+      # KeyVault__KeyVaultUrl: ${KEYVAULT_URL:-}
+      # KeyVault__KeyName: ${KEYVAULT_KEYNAME:-}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mauria-mock:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  pgdata: {}
+
+
