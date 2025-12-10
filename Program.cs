@@ -19,7 +19,7 @@ bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
 bld.Services.AddMemoryCache();
-bld.Services.AddScoped<IEncryptionService, KeyVaultService>();
+bld.Services.AddScoped<IEncryptionService, LocalEncryptionService>();
 
 bld.Services.AddAuthenticationJwtBearer(s =>
 {
@@ -43,7 +43,7 @@ bld.Services.AddCors(options =>
 
     options.AddPolicy("AllowSpecificProd", policy =>
     {
-        policy.WithOrigins("https://aurioncal.me")
+        policy.WithOrigins("https://aurioncal.slabus.me")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

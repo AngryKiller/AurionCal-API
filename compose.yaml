@@ -1,0 +1,87 @@
+﻿services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aurioncal-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      VIRTUAL_HOST: ${VITE_API_URL}
+      ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
+      ApiSettings__BaseUrl: http://mauria:8080
+      Jwt__ExpireHours: '3'      
+    ports:
+      - "8080:8080"
+    networks:
+      - external
+      - mauria_internal
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mauria:
+        condition: service_started
+    restart: unless-stopped
+      
+      
+  webapp:
+    build:
+      context: https://github.com/AngryKiller/AurionCal-Front.git
+    container_name: aurioncal-webapp
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: ${WEBSITE_URL}
+    ports:
+        - "80:80"
+    networks: 
+        - external
+    depends_on:
+        api:
+            condition: service_started
+    
+  postgres:
+    image: postgres:16
+    container_name: aurioncal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aurioncal
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - mauria_internal
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      
+  mauria:
+    build:
+      context: https://github.com/MauriaApp/API-v2.git
+    container_name: mauria
+    restart: unless-stopped
+    networks:
+      - mauria_internal
+    environment:
+      port: '8080'
+      host: '0.0.0.0'
+      SUPABASE_URL: 'http://supabase'
+      SUPABASE_KEY: '123456'
+      
+      
+networks:
+  external:
+    name: external
+    external: true
+  mauria_internal:
+    name: mauria_internal
+    external: false
+
+volumes:
+  pgdata:
+    name: pgdata
+    external: false
