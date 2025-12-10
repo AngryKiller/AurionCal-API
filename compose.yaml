@@ -10,9 +10,8 @@
       VIRTUAL_HOST: ${VITE_API_BASE_URL}
       ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
       ApiSettings__BaseUrl: http://mauria:8080
+      DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       Jwt__ExpireHours: '3'      
-    ports:
-      - "8080:8080"
     networks:
       - external
       - mauria_internal
@@ -32,8 +31,6 @@
     environment:
       VIRTUAL_HOST: ${WEBSITE_URL}
       VITE_API_BASE_URL: ${VITE_API_BASE_URL}
-    ports:
-        - "80:80"
     networks: 
         - external
     depends_on:
@@ -48,8 +45,6 @@
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: aurioncal
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
