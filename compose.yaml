@@ -7,7 +7,8 @@
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://0.0.0.0:8080
-      VIRTUAL_HOST: ${VITE_API_BASE_URL}
+      VIRTUAL_HOST: ${VIRTUAL_HOST_API}
+      VIRTUAL_PORT: '8080'
       ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
       ApiSettings__BaseUrl: http://mauria:8080
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
@@ -29,7 +30,7 @@
     container_name: aurioncal-webapp
     restart: unless-stopped
     environment:
-      VIRTUAL_HOST: ${WEBSITE_URL}
+      VIRTUAL_HOST: ${VIRTUAL_HOST_WEBSITE}
       VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     networks: 
         - external
