@@ -9,6 +9,7 @@
       ASPNETCORE_URLS: http://0.0.0.0:8080
       VIRTUAL_HOST: ${VIRTUAL_HOST_API}
       VIRTUAL_PORT: '8080'
+      TZ: 'Europe/Paris'
       ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
       ApiSettings__BaseUrl: http://mauria:8080
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
@@ -31,6 +32,7 @@
     restart: unless-stopped
     environment:
       VIRTUAL_HOST: ${VIRTUAL_HOST_WEBSITE}
+      TZ: 'Europe/Paris'
       VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     networks: 
         - external
@@ -46,6 +48,7 @@
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: aurioncal
+      TZ: 'Europe/Paris'
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -68,8 +71,9 @@
       host: '0.0.0.0'
       SUPABASE_URL: 'http://supabase'
       SUPABASE_KEY: '123456'
-      
-      
+      TZ: 'Europe/Paris'
+
+
 networks:
   external:
     name: ${proxy_network}
