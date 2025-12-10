@@ -75,7 +75,7 @@
       
 networks:
   external:
-    name: external
+    name: ${proxy_network}
     external: true
   mauria_internal:
     name: mauria_internal
