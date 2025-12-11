@@ -54,7 +54,7 @@ public class CalendarService
                     .Select(e => new CalendarEvent
                     {
                         Id = e.Id.Trim(),
-                        Title = e.Title,
+                        Title = e.Title.Trim(),
                         Start = e.Start.ToUniversalTime(),
                         End = e.End.ToUniversalTime(),
                         ClassName = e.ClassName,
