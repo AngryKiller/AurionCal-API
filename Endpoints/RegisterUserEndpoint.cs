@@ -3,6 +3,7 @@ using AurionCal.Api.Entities;
 using AurionCal.Api.Services;
 using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace AurionCal.Api.Endpoints;
@@ -22,6 +23,22 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
         AllowAnonymous();
         Post("/api/register");
     }
+
+    public class RegisterUserRequestValidator : Validator<RegisterUserRequest>
+    {
+        public RegisterUserRequestValidator()
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage("L'email est requis.")
+                .EmailAddress().WithMessage("Format d'email invalide.");
+
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage("Le mot de passe est requis.")
+                .MinimumLength(4).WithMessage("Le mot de passe doit contenir au moins 4 caractères.");
+        }
+    }
+    
+
     
     public override async Task HandleAsync(RegisterUserRequest r, CancellationToken c)
     {

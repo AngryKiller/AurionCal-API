@@ -14,12 +14,13 @@ public class MauriaApiService(HttpClient client, IConfiguration configuration) :
         var route = GetRoute(MauriaRoutes.AurionCheckLogin);
         var request = new CheckLoginInfoRequest
         {
-            Email = email,
+            Email = email.Trim().ToLowerInvariant(),
             Password = password
         };
         try
         {
             var response = await _client.PostAsJsonAsync(route, request, c);
+            Console.WriteLine(await response.Content.ReadAsStringAsync(c));
             //response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<CheckLoginInfoResponse>(c);
