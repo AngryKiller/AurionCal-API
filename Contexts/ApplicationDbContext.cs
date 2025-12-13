@@ -19,4 +19,9 @@ public class ApplicationDbContext : DbContext
             optionsBuilder.UseNpgsql("ApplicationDbContext");
         }
     }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        CalendarEvent.Configure(modelBuilder.Entity<CalendarEvent>());
+    }
 }

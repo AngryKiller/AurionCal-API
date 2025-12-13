@@ -27,6 +27,9 @@ namespace AurionCal.Api.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ClassName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -41,10 +44,7 @@ namespace AurionCal.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("Id", "UserId");
 
                     b.HasIndex("UserId");
 

@@ -46,8 +46,8 @@ public class MauriaApiService(HttpClient client, IConfiguration configuration) :
         {
             Email = email,
             Password = password,
-            StartDate = DateTime.UtcNow,
-            EndDate = DateTime.UtcNow.AddMonths(1)
+            StartDate = DateTime.UtcNow.AddDays(-7),
+            EndDate = DateTime.UtcNow.AddMonths(2)
         };
     
         var response = await _client.PostAsJsonAsync(route, request, c);

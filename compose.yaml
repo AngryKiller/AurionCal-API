@@ -12,6 +12,7 @@
       TZ: 'Europe/Paris'
       ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
       ApiSettings__BaseUrl: http://mauria:8080
+      ApiSettings__Cors: ${API_CORS}
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       Jwt__ExpireHours: '3'      
     networks:

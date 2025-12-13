@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AurionCal.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251210183450_FixPrimaryKeys_Events")]
-    partial class FixPrimaryKeys_Events
+    [Migration("20251213151529_FixCalendarEventPK")]
+    partial class FixCalendarEventPK
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -30,6 +30,9 @@ namespace AurionCal.Api.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("ClassName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -44,10 +47,7 @@ namespace AurionCal.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("Id", "UserId");
 
                     b.HasIndex("UserId");
 

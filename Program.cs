@@ -19,7 +19,16 @@ bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
 bld.Services.AddMemoryCache();
-bld.Services.AddScoped<IEncryptionService, LocalEncryptionService>();
+
+var keyVaultUrl = bld.Configuration.GetSection("KeyVault").GetValue<string>("KeyVaultUrl");
+if (!string.IsNullOrWhiteSpace(keyVaultUrl))
+{
+    bld.Services.AddScoped<IEncryptionService, KeyVaultService>();
+}
+else
+{
+    bld.Services.AddScoped<IEncryptionService, LocalEncryptionService>();
+}
 
 bld.Services.AddAuthenticationJwtBearer(s =>
 {
@@ -43,7 +52,7 @@ bld.Services.AddCors(options =>
 
     options.AddPolicy("AllowSpecificProd", policy =>
     {
-        policy.WithOrigins("https://aurioncal.slabus.me")
+        policy.WithOrigins(bld.Configuration.GetSection("ApiSettings").GetValue<string>("Cors")!)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
