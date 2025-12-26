@@ -64,7 +64,6 @@ public class CalendarService
                         End = e.End.ToUniversalTime(),
                         ClassName = e.ClassName,
                         UserId = scopedUser.Id // utiliser la FK plutôt que l'entité
-                        UserId = scopedUser.Id
                     })
                     .ToList();
 
