@@ -14,7 +14,7 @@ public class MauriaApiService(HttpClient client, IConfiguration configuration) :
         var route = GetRoute(MauriaRoutes.AurionCheckLogin);
         var request = new CheckLoginInfoRequest
         {
-            Email = email,
+            Email = email.Trim().ToLowerInvariant(),
             Password = password
         };
         try

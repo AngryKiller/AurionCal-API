@@ -13,21 +13,30 @@
       "data": [
         {
           "id": "evt-1",
-          "title": "Cours A",
+          "title": "IC2 C350 - TV\n\nArchitecture des ordinateurs\nCOURS_TD\nMonsieur LAMBERT",
           "start": "2025-10-10T08:00:00+0200",
           "end": "2025-10-10T10:00:00+0200",
           "allDay": false,
           "editable": false,
-          "className": "Salle 101"
+          "className": "COURS_TD"
         },
         {
           "id": "evt-2",
-          "title": "Cours B",
+          "title": "Fabrication additive\nEXAM_SURV",
           "start": "2025-10-11T13:00:00+0200",
           "end": "2025-10-11T15:00:00+0200",
           "allDay": false,
           "editable": false,
-          "className": "Salle 202"
+          "className": "est-epreuve"
+        },
+        {
+          "id": "evt-3",
+          "title": "ALG Salle 211\n\nAnglais\nEXAM_SURV",
+          "start": "2025-10-11T15:00:00+0200",
+          "end": "2025-10-11T17:00:00+0200",
+          "allDay": false,
+          "editable": false,
+          "className": "est-epreuve"
         }
       ]
     }
