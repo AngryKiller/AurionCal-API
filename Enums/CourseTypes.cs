@@ -7,6 +7,7 @@ public static class RawCourseTypes
     public const string Projet = "PROJET";
     public const string Epreuve = "est-epreuve";
     public const string AutoAppr = "AUTO_APPR";
+    public const string Reunion = "REUNION";
 }
 
 public enum CourseType
@@ -16,6 +17,7 @@ public enum CourseType
     CoursTp,
     Projet,
     Epreuve,
-    AutoAppr
+    AutoAppr,
+    Reunion
 }
 
