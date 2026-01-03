@@ -34,7 +34,7 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
 
             RuleFor(x => x.Password)
                 .NotEmpty().WithMessage("Le mot de passe est requis.")
-                .MinimumLength(4).WithMessage("Le mot de passe doit contenir au moins 4 caractères.");
+                .MinimumLength(6).WithMessage("Le mot de passe doit contenir au moins 6 caractères.");
         }
     }
     

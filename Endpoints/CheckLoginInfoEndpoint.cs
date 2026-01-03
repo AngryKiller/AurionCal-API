@@ -1,5 +1,6 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Services;
+using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FluentValidation;
@@ -24,7 +25,7 @@ public class CheckLoginInfoRequestValidator : Validator<CheckLoginInfoRequest>
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Le mot de passe est requis.")
-            .MinimumLength(4).WithMessage("Le mot de passe doit contenir au moins 4 caractères.");
+            .MinimumLength(6).WithMessage("Le mot de passe doit contenir au moins 6 caractères.");
     }
 }
 
@@ -32,7 +33,9 @@ public class CheckLoginInfoEndpoint(
     MauriaApiService apiService,
     ApplicationDbContext db,
     ILogger<CheckLoginInfoEndpoint> logger,
-    IConfiguration config)
+    IConfiguration config,
+    CalendarService calendarService,
+    IEncryptionService encryptionService)
     : Endpoint<CheckLoginInfoRequest, CheckLoginInfoResponse>
 {
     public override void Configure()
@@ -55,11 +58,10 @@ public class CheckLoginInfoEndpoint(
 
         try
         {
-            var userExists = await db.Users
-                .AsNoTracking()
-                .AnyAsync(u => u.JuniaEmail == r.Email, c);
+            var user = await db.Users
+                .FirstOrDefaultAsync(u => u.JuniaEmail == r.Email, c);
 
-            if (!userExists)
+            if (user is null)
             {
                 await Send.UnauthorizedAsync(c); 
                 return;
@@ -73,15 +75,23 @@ public class CheckLoginInfoEndpoint(
                 return;
             }
 
-            var user = await db.Users
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.JuniaEmail == r.Email, c);
-
-            if (user is null)
+            try
             {
-                logger.LogWarning("Utilisateur introuvable après validation pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
-                await SendProblemAsync(404, "Utilisateur introuvable", "L'utilisateur a pu être supprimé entre les vérifications.", c);
-                return;
+                var currentDecryptedPassword = await encryptionService.DecryptAsync(user.JuniaPassword, c);
+                if (currentDecryptedPassword != r.Password)
+                {
+                    user.JuniaPassword = await encryptionService.EncryptAsync(r.Password, c);
+                    await db.SaveChangesAsync(c);
+                    logger.LogInformation("Mot de passe mis à jour localement pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
+                    _ = Task.Run(async () =>
+                    {
+                        await calendarService.RefreshCalendarEventsAsync(user.Id, CancellationToken.None);
+                    }, CancellationToken.None);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Erreur lors de la vérification/mise à jour du mot de passe local pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
             }
 
             string jwtToken;
@@ -95,7 +105,7 @@ public class CheckLoginInfoEndpoint(
                 if (string.IsNullOrWhiteSpace(signingKey))
                 {
                     logger.LogError("Jwt:SigningKey manquant dans la configuration. TraceId={TraceId}", HttpContext.TraceIdentifier);
-                    await SendProblemAsync(500, "Clé JWT manquante", "La clé de signature JWT est absente de la configuration.", c);
+                    await SendProblemAsync(500, "Erreur interne", "Une erreur interne est survenue.", c);
                     return;
                 }
 
@@ -111,7 +121,7 @@ public class CheckLoginInfoEndpoint(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Échec de génération du token pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
-                await SendProblemAsync(500, "Génération du token échouée", "Impossible de générer un jeton d'authentification.", c);
+                await SendProblemAsync(500, "Erreur interne", "Une erreur interne est survenue.", c);
                 return;
             }
 
@@ -134,13 +144,13 @@ public class CheckLoginInfoEndpoint(
         }
         catch (HttpRequestException ex)
         {
-            logger.LogWarning(ex, "Service externe indisponible pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
-            await SendProblemAsync(502, "Service externe indisponible", "Impossible de contacter le service d'authentification.", c);
+            logger.LogWarning(ex, "Mauria indisponible pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
+            await SendProblemAsync(500, "Erreur interne", "Une erreur interne est survenue.", c);
         }
         catch (DbException ex)
         {
             logger.LogError(ex, "Erreur base de données lors de la vérification pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
-            await SendProblemAsync(503, "Base de données indisponible", "Une erreur est survenue lors de l'accès aux données.", c);
+            await SendProblemAsync(500, "Erreur interne", "Une erreur interne est survenue.", c);
         }
         catch (Exception ex)
         {
