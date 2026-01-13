@@ -2,6 +2,7 @@ using AurionCal.Api.Contexts;
 using AurionCal.Api.Services;
 using FastEndpoints;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.EntityFrameworkCore;
 
 namespace AurionCal.Api.Endpoints;
 
@@ -25,7 +26,10 @@ public class GetCalendarFeedEndpoint(
 
     public override async Task HandleAsync(GetCalendarFeedRequest r, CancellationToken c)
     {
-        var user = await db.Users.FindAsync([r.UserId], c);
+        var user = await db.Users
+            .Include(u => u.RefreshStatus)
+            .FirstOrDefaultAsync(u => u.Id == r.UserId, c);
+
         if (user == null || user.CalendarToken != r.Token)
         {
             await Send.NotFoundAsync(c);
@@ -33,6 +37,11 @@ public class GetCalendarFeedEndpoint(
         }
 
         bool needsRefresh = !user.LastUpdate.HasValue || (DateTime.UtcNow - user.LastUpdate.Value).TotalHours > 1;
+        
+        if (user.RefreshStatus?.NextAttemptUtc is { } next && next > DateTime.UtcNow)
+        {
+            needsRefresh = false;
+        }
 
         var cacheKey = $"planning:{r.UserId}";
         var planningEvents = await cache.GetOrCreateAsync(cacheKey, async entry =>

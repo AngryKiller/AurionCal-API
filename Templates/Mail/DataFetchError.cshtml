@@ -1,0 +1,94 @@
+@model AurionCal.Api.Templates.Mail.DataFetchError
+<mjml>
+  <mj-head>
+    <mj-font name="Source Sans 3" href="https://fonts.googleapis.com/css?family=Source+Sans+3"></mj-font>
+    <mj-attributes>
+      <mj-all font-family="'Source Sans 3', Helvetica, Arial, sans-serif"></mj-all>
+      <mj-text font-weight="400" font-size="18px" color="#1D3C6B" line-height="26px" align="center" padding="0px"></mj-text>
+    </mj-attributes>
+    <mj-style>
+      .aa-text a { text-decoration: underline; color: unset; }
+      .aa-info { border-radius: 14px; }
+      .aa-btn td { box-shadow: inset 0 0 1px #fff; }
+      .aa-btn p, .aa-btn a { background-color: transparent !important; }
+      .aa-btn-blue:hover td { background: #0D3D85 !important; }
+      .aa-btn-red:hover td { background: #850D0D !important; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#fff">
+    <mj-section background-color="transparent" padding="0px">
+      <mj-column padding="0px">
+        <mj-text align="center" padding="0px">
+          <svg width="128" height="128" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:inline-block">
+            <defs>
+              <linearGradient id="paint0_linear_1_3" x1="128" y1="16" x2="128" y2="232" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FCE38A"/>
+                <stop offset="1" stop-color="#F3B431"/>
+              </linearGradient>
+            </defs>
+            <path d="M107.34 31.45L22.41 190.45C14.81 203.65 24.34 220 39.59 220H216.41C231.66 220 241.19 203.65 233.59 190.45L141.59 31.45C133.99 18.25 114.94 18.25 107.34 31.45Z" fill="url(#paint0_linear_1_3)"/>
+            <path d="M120 70H136V152H120V70Z" fill="#333333"/>
+            <path d="M128 196C134.627 196 140 190.627 140 184C140 177.373 134.627 172 128 172C121.373 172 116 177.373 116 184C116 190.627 121.373 196 128 196Z" fill="#333333"/>
+          </svg>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="#F4F9FF" padding="30px 40px">
+      <mj-column width="100%">
+        <mj-text padding="0px" font-size="28px" line-height="34px" font-weight="600">Votre emploi du temps n'a pas été mis à jour</mj-text>
+        <mj-spacer height="30px"></mj-spacer>
+        <mj-text css-class="aa-text">Bonjour, pour information les 3 dernières tentatives de mise à jour de votre emploi du temps ont échouées.</mj-text>
+        <mj-spacer height="30px"></mj-spacer>
+        <mj-text css-class="aa-text"><b>Dernière mise à jour:</b> @Model.LastUpdated</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+        <mj-text css-class="aa-text">Vous avez modifié votre mot de passe Aurion? Reconnectez-vous sur AurionCal pour le mettre à jour.</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+        <mj-text css-class="aa-text">Si vous ne souhaitez plus utiliser le service vous pouvez également supprimer votre compte facilement.</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+      </mj-column>
+    </mj-section>
+    <!-- Buttons -->
+    <mj-section background-color="#F4F9FF" border-radius="0px 0px 30px 30px" padding="0px 30px 50px 40px">
+      <mj-column width="48%">
+        <mj-button href="@Model.AppUrl" padding="0px" border-radius="12px" border="1px solid #0D3D85" background-color="#4F77B4" font-size="18px" width="100%" css-class="aa-btn aa-btn-blue">
+          Accéder à AurionCal
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- English Section -->
+    <mj-section background-color="transparent" padding="20px 0px 0px 0px"></mj-section>
+
+    <mj-section background-color="#F4F9FF" border-radius="30px 30px 0px 0px" padding="30px 40px">
+      <mj-column width="100%">
+        <mj-text padding="0px" font-size="28px" line-height="34px" font-weight="600">Your schedule has not been updated</mj-text>
+        <mj-spacer height="30px"></mj-spacer>
+        <mj-text css-class="aa-text">Hello, for your information the last 3 attempts to fetch your schedule failed.</mj-text>
+        <mj-spacer height="30px"></mj-spacer>
+        <mj-text css-class="aa-text"><b>Last update:</b> @Model.LastUpdated</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+        <mj-text css-class="aa-text">Did you change your Aurion password? Please login to AurionCal to update it.</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+        <mj-text css-class="aa-text">If you no longer wish to use the service you can also delete your account easily.</mj-text>
+        <mj-spacer height="14px"></mj-spacer>
+      </mj-column>
+    </mj-section>
+    <!-- Buttons English -->
+    <mj-section background-color="#F4F9FF" border-radius="0px 0px 30px 30px" padding="0px 30px 50px 40px">
+      <mj-column width="48%">
+        <mj-button href="@Model.AppUrl" padding="0px" border-radius="12px" border="1px solid #0D3D85" background-color="#4F77B4" font-size="18px" width="100%" css-class="aa-btn aa-btn-blue">
+          Access AurionCal
+        </mj-button>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer -->
+    <mj-section background-color="transparent" padding="16px 0px 40px 0px">
+      <mj-column>
+        <mj-text color="#6a7f9e" font-size="14px" css-class="aa-text" line-height="24px">
+          AurionCal
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

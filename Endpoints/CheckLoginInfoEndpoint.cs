@@ -6,6 +6,7 @@ using FastEndpoints.Security;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
+using AurionCal.Api.Templates.Mail;
 
 namespace AurionCal.Api.Endpoints;
 
@@ -35,6 +36,8 @@ public class CheckLoginInfoEndpoint(
     ILogger<CheckLoginInfoEndpoint> logger,
     IConfiguration config,
     CalendarService calendarService,
+    IMailTemplateService mailTemplateService,
+    IEmailSenderService emailSender,
     IEncryptionService encryptionService)
     : Endpoint<CheckLoginInfoRequest, CheckLoginInfoResponse>
 {

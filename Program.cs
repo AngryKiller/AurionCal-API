@@ -5,7 +5,9 @@ using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
 using FastEndpoints.Security;
 using FastEndpoints.Swagger;
+using MailKitSimplified.Sender;
 using Microsoft.EntityFrameworkCore;
+using Mjml.Net;
 
 var bld = WebApplication.CreateBuilder();
 
@@ -18,7 +20,12 @@ bld.Services.AddDbContext<ApplicationDbContext>(options =>
 bld.Services.AddTransient<DbDataInitializer>();
 bld.Services.AddHttpClient<MauriaApiService>();
 bld.Services.AddScoped<CalendarService>();
+bld.Services.AddScoped<RefreshFailureNotifier>();
 bld.Services.AddMemoryCache();
+bld.Services.AddMailKitSimplifiedEmailSender(bld.Configuration);
+bld.Services.AddSingleton<IMjmlRenderer, MjmlRenderer>();
+bld.Services.AddScoped<IEmailSenderService, SmtpSenderService>();
+bld.Services.AddScoped<IMailTemplateService, RazorMjmlTemplateService>();
 
 var keyVaultUrl = bld.Configuration.GetSection("KeyVault").GetValue<string>("KeyVaultUrl");
 if (!string.IsNullOrWhiteSpace(keyVaultUrl))

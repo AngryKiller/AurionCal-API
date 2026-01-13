@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<User> Users { get; set; }
     public DbSet<CalendarEvent> CalendarEvents { get; set; }
+    public DbSet<UserRefreshStatus> UserRefreshStatuses { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -23,5 +24,6 @@ public class ApplicationDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         CalendarEvent.Configure(modelBuilder.Entity<CalendarEvent>());
+        UserRefreshStatus.Configure(modelBuilder.Entity<UserRefreshStatus>());
     }
 }
