@@ -13,8 +13,16 @@
       ConnectionStrings__ApplicationDbContext: Host=postgres;Database=aurioncal;Username=postgres;Password=postgres;
       ApiSettings__BaseUrl: http://mauria:8080
       ApiSettings__Cors: ${API_CORS}
+      ApiSettings__AppUrl: ${APP_URL}
       DOPPLER_TOKEN: ${DOPPLER_TOKEN}
-      Jwt__ExpireHours: '3'      
+      Jwt__ExpireHours: '3'
+      EmailSender__SmtpHost: ${SMTP_HOST}
+      EmailSender__SmtpPort: ${SMTP_PORT}
+      EmailSender__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS}
+      EmailSender__SmtpCredential__UserName: ${SMTP_USERNAME}
+      EmailSender__SmtpCredential__Password: ${SMTP_PASSWORD}
+      EmailSender__Sender__Name: ${SMTP_SENDER_NAME}
+      EmailSender__Sender__Email: ${SMTP_SENDER_EMAIL}
     networks:
       - external
       - mauria_internal
