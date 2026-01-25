@@ -27,7 +27,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Migrations\" />
+      <Folder Include="Migrations\\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Update="Templates\\**\\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Content>
+
+      <None Update="Templates\\**\\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

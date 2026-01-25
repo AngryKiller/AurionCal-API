@@ -24,4 +24,7 @@ WORKDIR /app
 COPY --from=build /usr/bin/doppler /usr/bin/doppler
 COPY --from=publish /app/publish .
 
+# Les templates Razor/MJML doivent être présents au runtime (RazorLight FileSystemProject)
+COPY --from=build /src/Templates ./Templates
+
 ENTRYPOINT ["doppler", "run", "--", "dotnet", "AurionCal.Api.dll"]
