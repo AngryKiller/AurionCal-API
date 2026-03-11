@@ -14,6 +14,8 @@ public static class CourseTypeMappings
             [RawCourseTypes.Epreuve] = CourseType.Epreuve,
             [RawCourseTypes.AutoAppr] = CourseType.AutoAppr,
             [RawCourseTypes.Reunion] = CourseType.Reunion,
+            [RawCourseTypes.Conference] = CourseType.Conference,
+            [RawCourseTypes.TdAutoGere] = CourseType.TdAutoGere,
         }.ToImmutableDictionary();
 
     private static readonly ImmutableDictionary<CourseType, string> EnumToDisplay =
@@ -26,6 +28,8 @@ public static class CourseTypeMappings
             [CourseType.Projet] = "Projet",
             [CourseType.Epreuve] = "Épreuve",
             [CourseType.Reunion] = "Réunion",
+            [CourseType.Conference] = "Conférence",
+            [CourseType.TdAutoGere] = "TD Auto-géré",
         }.ToImmutableDictionary();
 
     public static CourseType Parse(string? rawType)

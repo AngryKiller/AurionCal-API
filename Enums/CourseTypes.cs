@@ -8,6 +8,8 @@ public static class RawCourseTypes
     public const string Epreuve = "est-epreuve";
     public const string AutoAppr = "AUTO_APPR";
     public const string Reunion = "REUNION";
+    public const string Conference = "CONF";
+    public const string TdAutoGere = "TD_AUTO_GERE_PLANIFIE";
 }
 
 public enum CourseType
@@ -18,6 +20,8 @@ public enum CourseType
     Projet,
     Epreuve,
     AutoAppr,
-    Reunion
+    Reunion,
+    Conference,
+    TdAutoGere
 }
 

@@ -56,6 +56,15 @@ public static class CalendarEventFormatter
 
     private static IcalEvent FormatCourse(CalendarEvent cEvent, CourseType type, string firstLine, string[] lines)
     {
+        if (type == CourseType.Conference)
+        {
+            var conferenceTitle = lines.Length > 0 ? lines[0] : string.Empty;
+            if (string.IsNullOrWhiteSpace(conferenceTitle)) conferenceTitle = firstLine;
+
+            var conferenceSummary = BuildSummary(conferenceTitle, cEvent.ClassName);
+            return CreateBaseEvent(cEvent, conferenceSummary, firstLine);
+        }
+
         // Filtrage du ClassName dans les lignes restantes
         if (type != CourseType.Unknown && !string.IsNullOrWhiteSpace(cEvent.ClassName))
         {
