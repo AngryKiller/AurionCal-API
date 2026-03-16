@@ -9,6 +9,7 @@ public static class CourseTypeMappings
         new Dictionary<string, CourseType>(StringComparer.OrdinalIgnoreCase)
         {
             [RawCourseTypes.CoursTd] = CourseType.CoursTd,
+            [RawCourseTypes.Td] = CourseType.CoursTd,
             [RawCourseTypes.CoursTp] = CourseType.CoursTp,
             [RawCourseTypes.Projet] = CourseType.Projet,
             [RawCourseTypes.Epreuve] = CourseType.Epreuve,

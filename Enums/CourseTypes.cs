@@ -3,6 +3,7 @@ namespace AurionCal.Api.Enums;
 public static class RawCourseTypes
 {
     public const string CoursTd = "COURS_TD";
+    public const string Td = "TD";
     public const string CoursTp = "TP";
     public const string Projet = "PROJET";
     public const string Epreuve = "est-epreuve";
