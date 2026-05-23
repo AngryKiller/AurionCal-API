@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# 
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AurionCal.Api", "AurionCal.Api.csproj", "{610C4E9A-57D5-4BE9-BD61-D9653089953F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0FC93FD3-C14F-49E1-9378-FB37D78C7AF6}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AurionCal.Tests", "AurionCal.Tests\AurionCal.Tests.csproj", "{69DD5F65-51C8-42BA-AEE6-170DE1549C38}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,5 +20,9 @@ Global
 		{610C4E9A-57D5-4BE9-BD61-D9653089953F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{610C4E9A-57D5-4BE9-BD61-D9653089953F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{610C4E9A-57D5-4BE9-BD61-D9653089953F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69DD5F65-51C8-42BA-AEE6-170DE1549C38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69DD5F65-51C8-42BA-AEE6-170DE1549C38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69DD5F65-51C8-42BA-AEE6-170DE1549C38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69DD5F65-51C8-42BA-AEE6-170DE1549C38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
