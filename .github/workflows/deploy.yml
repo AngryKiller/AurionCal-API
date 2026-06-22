@@ -18,13 +18,12 @@ jobs:
 
       - name: 🏷️ Tag current image as rollback
         run: docker tag aurioncal-api:latest aurioncal-api:rollback || true
-
       - name: 🚀 Deploy stack
         run: doppler run -- docker compose up --build -d
 
       - name: ✅ Verify deployment
         id: verify
-        run: docker compose ps | grep -E "aurioncal-api.*running"
+        run: docker ps --filter "name=aurioncal-api" --filter "status=running" | grep aurioncal-api
 
       - name: 🔙 Rollback on failure
         if: failure()
