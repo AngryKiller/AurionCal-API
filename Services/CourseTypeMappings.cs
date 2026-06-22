@@ -13,6 +13,7 @@ public static class CourseTypeMappings
             [RawCourseTypes.CoursTp] = CourseType.CoursTp,
             [RawCourseTypes.Projet] = CourseType.Projet,
             [RawCourseTypes.Epreuve] = CourseType.Epreuve,
+            [RawCourseTypes.EpreuveAlt] = CourseType.Epreuve,
             [RawCourseTypes.AutoAppr] = CourseType.AutoAppr,
             [RawCourseTypes.Reunion] = CourseType.Reunion,
             [RawCourseTypes.Conference] = CourseType.Conference,
@@ -40,16 +41,13 @@ public static class CourseTypeMappings
 
         var normalized = Normalize(rawType);
 
-        if (RawToEnum.TryGetValue(normalized, out var found))
-            return found;
-
-        if (RawToEnum.TryGetValue(rawType, out found))
+        if (RawToEnum.TryGetValue(normalized, out var found) || RawToEnum.TryGetValue(rawType, out found))
             return found;
 
         return CourseType.Unknown;
     }
 
-    public static string ToDisplayName(CourseType type)
+    private static string ToDisplayName(CourseType type)
     {
         return EnumToDisplay.TryGetValue(type, out var display)
             ? display

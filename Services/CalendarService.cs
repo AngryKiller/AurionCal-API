@@ -175,14 +175,14 @@ public class CalendarService
     private static string Truncate(string value, int max)
         => value.Length <= max ? value : value[..max];
 
-    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents)
+    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents, bool examAccommodations = false)
     {
         var calendar = new Calendar();
         calendar.AddTimeZone(new VTimeZone("Europe/Paris"));
 
         foreach (var evt in planningEvents)
         {
-            calendar.Events.Add(CalendarEventFormatter.ToIcalEvent(evt));
+            calendar.Events.Add(CalendarEventFormatter.ToIcalEvent(evt, examAccommodations));
         }
 
         return new CalendarSerializer().SerializeToString(calendar);

@@ -30,6 +30,7 @@ public class GetCalendarFeedEndpoint(
             .Include(u => u.RefreshStatus)
             .FirstOrDefaultAsync(u => u.Id == r.UserId, c);
 
+
         if (user == null || user.CalendarToken != r.Token)
         {
             await Send.NotFoundAsync(c);
@@ -58,7 +59,7 @@ public class GetCalendarFeedEndpoint(
             }).ToList() ?? [];
         });
 
-        var feed = calendarService.GenerateCalendarFeed(planningEvents);
+        var feed = calendarService.GenerateCalendarFeed(planningEvents, user.ExamAccommodations);
 
         HttpContext.Response.Headers.Append("Content-Disposition", "attachment; filename=\"Planning Junia.ics\"");
         HttpContext.Response.ContentType = "text/calendar";

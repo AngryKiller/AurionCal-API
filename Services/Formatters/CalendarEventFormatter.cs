@@ -1,5 +1,6 @@
 namespace AurionCal.Api.Services.Formatters;
 
+using System.Globalization;
 using Entities;
 using Enums;
 using Ical.Net.DataTypes;
@@ -9,28 +10,32 @@ public static class CalendarEventFormatter
 {
     private const string TimeZoneId = "Europe/Paris";
 
-    public static IcalEvent ToIcalEvent(CalendarEvent cEvent)
+    public static IcalEvent ToIcalEvent(CalendarEvent cEvent, bool examAccommodations = false)
     {
         var lines = cEvent.Title
-            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            .Split(Separator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (lines.Length == 0) return CreateBaseEvent(cEvent, "Sans titre", string.Empty);
 
         var firstLine = lines[0];
         var remainingLines = lines.Skip(1).ToArray();
-        
+
         var courseType = CourseTypeMappings.Parse(cEvent.ClassName);
 
         return courseType == CourseType.Epreuve
-            ? FormatExam(cEvent, firstLine, remainingLines)
+            ? FormatExam(cEvent, firstLine, remainingLines, examAccommodations)
             : FormatCourse(cEvent, courseType, firstLine, remainingLines);
     }
 
-    private static IcalEvent FormatExam(CalendarEvent cEvent, string firstLine, string[] lines)
+    private static IcalEvent FormatExam(CalendarEvent cEvent, string firstLine, string[] lines, bool examAccommodations)
     {
         // Filtrage spécifique aux examens
+        // Extraire la ligne "Horaire TT" avant tout autre filtrage
+        var examAccommodationsLine = lines.FirstOrDefault(l => l.StartsWith("Horaire TT", StringComparison.OrdinalIgnoreCase));
+
         var filteredLines = lines
-            .Where(l => !l.Contains("EXAM_SURV", StringComparison.OrdinalIgnoreCase))
+            .Where(l => !l.Contains("EXAM_SURV", StringComparison.OrdinalIgnoreCase)
+                     && !l.StartsWith("Horaire TT", StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         // Pattern matching sur le contenu du tableau
@@ -51,8 +56,47 @@ public static class CalendarEventFormatter
         };
 
         var summary = BuildSummary(examName, cEvent.ClassName);
+
+        if (examAccommodations && examAccommodationsLine is not null && TryParseExamAccommodationsTimes(examAccommodationsLine, cEvent.Start.DateTime, out var examAccommodationsStart, out var examAccommodationsEnd))
+        {
+            return CreateBaseEvent(cEvent, summary, location, examAccommodationsStart, examAccommodationsEnd);
+        }
+
         return CreateBaseEvent(cEvent, summary, location);
     }
+
+    private static bool TryParseExamAccommodationsTimes(string examAccommodationsLine, DateTime eventDate, out DateTime start, out DateTime end)
+    {
+        start = default;
+        end = default;
+
+        var colonIdx = examAccommodationsLine.IndexOf(':');
+        if (colonIdx < 0) return false;
+
+        var timePart = examAccommodationsLine[(colonIdx + 1)..].Trim();
+        var dashIdx = timePart.IndexOf('-');
+        if (dashIdx < 0) return false;
+
+        var startStr = timePart[..dashIdx].Trim();
+        var endStr = timePart[(dashIdx + 1)..].Trim();
+
+        if (!TryParseTime(startStr, out var startTime) || !TryParseTime(endStr, out var endTime))
+            return false;
+
+        if (endTime <= startTime)
+            return false;
+
+        var date = eventDate.Date;
+        start = date.Add(startTime.ToTimeSpan());
+        end = date.Add(endTime.ToTimeSpan());
+        return true;
+    }
+
+    private static readonly string[] TimeFormats = ["H'h'mm", "H'h'm", "H'h'"];
+    private static readonly char[] Separator = ['\r', '\n'];
+
+    private static bool TryParseTime(string value, out TimeOnly result)
+        => TimeOnly.TryParseExact(value, TimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out result);
 
     private static IcalEvent FormatCourse(CalendarEvent cEvent, CourseType type, string firstLine, string[] lines)
     {
@@ -76,15 +120,15 @@ public static class CalendarEventFormatter
 
         var (courseName, teacher) = lines switch
         {
-            [var c, var t, ..] => (c, t), // Au moins 2 lignes
-            [var c] => (c, string.Empty), // 1 ligne
+            [var c, var t, ..] => (c, t),
+            [var c] => (c, string.Empty),
             _ => (string.Empty, string.Empty)
         };
 
         var parts = new List<string>();
         if (!string.IsNullOrWhiteSpace(courseName)) parts.Add(courseName);
         if (!string.IsNullOrWhiteSpace(teacher)) parts.Add($"- {teacher}");
-        
+
         var baseSummary = string.Join(" ", parts);
         var summary = BuildSummary(baseSummary, cEvent.ClassName);
 
@@ -94,20 +138,22 @@ public static class CalendarEventFormatter
     private static string BuildSummary(string baseName, string className)
     {
         var typeDisplay = CourseTypeMappings.ToDisplayNameFromRaw(className);
-        
+
         if (string.IsNullOrWhiteSpace(typeDisplay)) return baseName;
-        if (string.IsNullOrWhiteSpace(baseName)) return typeDisplay;
-        
-        return $"{baseName} ({typeDisplay})";
+        return string.IsNullOrWhiteSpace(baseName) ? typeDisplay : $"{baseName} ({typeDisplay})";
     }
 
-    private static IcalEvent CreateBaseEvent(CalendarEvent cEvent, string summary, string location)
+    private static IcalEvent CreateBaseEvent(CalendarEvent cEvent, string summary, string location,
+        DateTime? overrideStart = null, DateTime? overrideEnd = null)
     {
+        var start = overrideStart ?? cEvent.Start.DateTime;
+        var end = overrideEnd ?? cEvent.End.DateTime;
+
         return new IcalEvent
         {
             Summary = summary,
-            Start = new CalDateTime(cEvent.Start.DateTime).ToTimeZone(TimeZoneId),
-            End = new CalDateTime(cEvent.End.DateTime).ToTimeZone(TimeZoneId),
+            Start = new CalDateTime(start).ToTimeZone(TimeZoneId),
+            End = new CalDateTime(end).ToTimeZone(TimeZoneId),
             Description = cEvent.Title.Trim(),
             Location = location ?? string.Empty,
             Uid = cEvent.Id
