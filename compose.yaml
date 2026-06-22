@@ -1,4 +1,6 @@
-﻿services:
+name: aurioncal
+
+services:
   api:
     build:
       context: .
