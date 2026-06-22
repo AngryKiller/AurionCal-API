@@ -26,6 +26,8 @@ services:
       EmailSender__SmtpCredential__Password: ${SMTP_PASSWORD}
       EmailSender__Sender__Name: ${SMTP_SENDER_NAME}
       EmailSender__Sender__Email: ${SMTP_SENDER_EMAIL}
+    volumes:
+      - aurioncal-dataprotection-keys:/home/app/.aspnet/DataProtection-Keys
     networks:
       - external
       - mauria_internal
@@ -97,4 +99,7 @@ networks:
 volumes:
   pgdata:
     name: pgdata
+    external: false
+  aurioncal-dataprotection-keys:
+    name: aurioncal-dataprotection-keys
     external: false
