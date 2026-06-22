@@ -6,8 +6,6 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <PreserveCompilationContext>true</PreserveCompilationContext>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-        <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     </PropertyGroup>
 
     <ItemGroup>
@@ -33,12 +31,25 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Update="Templates\\**\\*">
+      <Compile Remove="AurionCal.Tests/**" />
+      <Content Remove="AurionCal.Tests/**" />
+      <None Remove="AurionCal.Tests/**" />
+      <EmbeddedResource Remove="AurionCal.Tests/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <!--
+        RazorLight templates are compiled at runtime, not at build time.
+        Removing .cshtml files from Content prevents the SDK Razor source generator
+        from picking them up, which would conflict with RazorLight's own Razor engine
+        and produce duplicate assembly attributes (CS0579) and CS8785 warnings.
+      -->
+      <Content Remove="Templates\**\*.cshtml" />
+      <None Include="Templates\**\*.cshtml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
-
-      <None Update="Templates\\**\\*">
+      </None>
+      <None Update="Templates\**\*.cs">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
