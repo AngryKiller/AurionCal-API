@@ -1,0 +1,33 @@
+name: Deploy to prod
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: /opt/aurioncal
+
+    steps:
+      - name: 📥 Pull latest changes
+        run: git pull origin main
+
+      - name: 🏷️ Tag current image as rollback
+        run: docker tag aurioncal-api:latest aurioncal-api:rollback || true
+
+      - name: 🚀 Deploy stack
+        run: doppler run -- docker compose up --build -d
+
+      - name: ✅ Verify deployment
+        id: verify
+        run: docker compose ps | grep -E "aurioncal-api.*running"
+
+      - name: 🔙 Rollback on failure
+        if: failure()
+        run: |
+          docker tag aurioncal-api:rollback aurioncal-api:latest
+          doppler run -- docker compose up -d --no-build
