@@ -6,8 +6,6 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
-RUN apt-get update && apt-get install -y curl \
-    && curl -Ls https://cli.doppler.com/install.sh | sh
 WORKDIR /src
 COPY ["AurionCal.Api.csproj", "./"]
 RUN dotnet restore "AurionCal.Api.csproj"
@@ -21,10 +19,9 @@ RUN dotnet publish "./AurionCal.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 
 FROM base AS final
 WORKDIR /app
-COPY --from=build /usr/bin/doppler /usr/bin/doppler
 COPY --from=publish /app/publish .
 
 # Les templates Razor/MJML doivent être présents au runtime (RazorLight FileSystemProject)
 COPY --from=build /src/Templates ./Templates
 
-ENTRYPOINT ["doppler", "run", "--", "dotnet", "AurionCal.Api.dll"]
+ENTRYPOINT ["dotnet", "AurionCal.Api.dll"]

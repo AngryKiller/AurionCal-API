@@ -14,7 +14,6 @@
       ApiSettings__BaseUrl: http://mauria:8080
       ApiSettings__Cors: ${API_CORS}
       ApiSettings__AppUrl: ${APP_URL}
-      DOPPLER_TOKEN: ${DOPPLER_TOKEN}
       Jwt__ExpireHours: '3'
       EmailSender__SmtpHost: ${SMTP_HOST}
       EmailSender__SmtpPort: ${SMTP_PORT}
