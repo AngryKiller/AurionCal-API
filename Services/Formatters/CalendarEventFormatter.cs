@@ -83,6 +83,9 @@ public static class CalendarEventFormatter
         if (!TryParseTime(startStr, out var startTime) || !TryParseTime(endStr, out var endTime))
             return false;
 
+        if (endTime <= startTime)
+            return false;
+
         var date = eventDate.Date;
         start = date.Add(startTime.ToTimeSpan());
         end = date.Add(endTime.ToTimeSpan());
