@@ -11,6 +11,7 @@ public class UserProfileResponse
     public string Email { get; set; } = string.Empty;
     public string CalendarFeedUrl { get; set; } = string.Empty;
     public DateTime? LastUpdated { get; set; }
+    public bool ExamAccommodations { get; set; }
 }
 
 public class GetUserProfileEndpoint(ApplicationDbContext db, IConfiguration config) : EndpointWithoutRequest<UserProfileResponse>
@@ -49,7 +50,8 @@ public class GetUserProfileEndpoint(ApplicationDbContext db, IConfiguration conf
             UserId = user.Id,
             Email = user.JuniaEmail,
             CalendarFeedUrl = calendarUrl,
-            LastUpdated = user.LastUpdate ?? null
+            LastUpdated = user.LastUpdate ?? null,
+            ExamAccommodations = user.ExamAccommodations
         };
 
         await Send.OkAsync(response, ct);

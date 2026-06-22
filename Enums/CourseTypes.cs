@@ -7,6 +7,7 @@ public static class RawCourseTypes
     public const string CoursTp = "TP";
     public const string Projet = "PROJET";
     public const string Epreuve = "est-epreuve";
+    public const string EpreuveAlt = "EXAM_SURV";
     public const string AutoAppr = "AUTO_APPR";
     public const string Reunion = "REUNION";
     public const string Conference = "CONF";
