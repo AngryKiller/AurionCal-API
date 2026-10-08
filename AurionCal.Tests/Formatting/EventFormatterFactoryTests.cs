@@ -12,6 +12,10 @@ public class EventFormatterFactoryTests
         => Assert.IsType<JuniaEventFormatter>(_factory.For(TestData.School("junia", "junia")));
 
     [Fact]
+    public void For_IstcParserId_ReturnsIstcFormatter()
+        => Assert.IsType<IstcEventFormatter>(_factory.For(TestData.School("istc", "istc")));
+
+    [Fact]
     public void For_DefaultParserId_ReturnsDefaultFormatter()
         => Assert.IsType<DefaultEventFormatter>(_factory.For(TestData.School("other", "default")));
 

@@ -36,8 +36,8 @@ public sealed class MauriaClient(HttpClient client, IConfiguration configuration
             BaseUrl = school.AurionBaseUrl,
             Email = email,
             Password = password,
-            StartDate = DateTime.UtcNow.AddDays(-7),
-            EndDate = DateTime.UtcNow.AddMonths(2)
+            StartDate = new DateTimeOffset(DateTime.UtcNow.AddDays(-7)).ToUnixTimeMilliseconds(),
+            EndDate = new DateTimeOffset(DateTime.UtcNow.AddMonths(2)).ToUnixTimeMilliseconds()
         };
 
         var response = await client.PostAsJsonAsync(GetRoute(MauriaRoutes.AurionPlanning), request, c);

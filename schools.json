@@ -9,6 +9,14 @@
         "EmailDomains": [ "junia.com", "student.junia.com" ],
         "SupportsExamAccommodations": true,
         "ParserId": "junia"
+      },
+      {
+        "Id": "istc",
+        "Name": "ISTC",
+        "AurionBaseUrl": "https://aurion.istc.fr",
+        "EmailDomains": [ "istc.fr", "gmail.com" ],
+        "SupportsExamAccommodations": false,
+        "ParserId": "istc"
       }
     ]
   }
