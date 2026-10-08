@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # GitHub-hosted runner: the self-hosted one is reserved for deployment and must not run PR code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 🧪 Run tests
+        run: dotnet test AurionCal.Tests/AurionCal.Tests.csproj --configuration Release --verbosity normal

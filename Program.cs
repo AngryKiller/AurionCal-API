@@ -1,5 +1,8 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Initializers;
+using AurionCal.Api.Schools;
+using AurionCal.Api.Services.Formatting;
+using Microsoft.Extensions.Options;
 using AurionCal.Api.Services;
 using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
@@ -11,6 +14,8 @@ using Mjml.Net;
 
 var bld = WebApplication.CreateBuilder();
 
+bld.Configuration.AddJsonFile("schools.json", optional: false, reloadOnChange: false);
+
 var jwtSection = bld.Configuration.GetSection("Jwt");
 var signingKey = jwtSection.GetValue<string>("SigningKey") ?? throw new InvalidOperationException("Jwt:SigningKey manquant");
 
@@ -18,7 +23,13 @@ bld.Services.AddTransient<HttpClientHandler>();
 bld.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(bld.Configuration.GetConnectionString("ApplicationDbContext")));
 bld.Services.AddTransient<DbDataInitializer>();
-bld.Services.AddHttpClient<MauriaApiService>();
+bld.Services.AddOptions<SchoolsOptions>()
+    .BindConfiguration(SchoolsOptions.SectionName)
+    .ValidateOnStart();
+bld.Services.AddSingleton<IValidateOptions<SchoolsOptions>, SchoolsOptionsValidator>();
+bld.Services.AddSingleton<ISchoolCatalog, ConfigSchoolCatalog>();
+bld.Services.AddSingleton<IEventFormatterFactory, EventFormatterFactory>();
+bld.Services.AddHttpClient<IMauriaClient, MauriaClient>();
 bld.Services.AddScoped<CalendarService>();
 bld.Services.AddScoped<RefreshFailureNotifier>();
 bld.Services.AddMemoryCache();

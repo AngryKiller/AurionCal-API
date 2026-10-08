@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AurionCal.Api.Contexts;
+using AurionCal.Api.Schools;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,13 +9,15 @@ namespace AurionCal.Api.Endpoints;
 public class UserProfileResponse
 {
     public Guid UserId { get; set; }
+    public string SchoolId { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string CalendarFeedUrl { get; set; } = string.Empty;
     public DateTime? LastUpdated { get; set; }
     public bool ExamAccommodations { get; set; }
+    public bool SupportsExamAccommodations { get; set; }
 }
 
-public class GetUserProfileEndpoint(ApplicationDbContext db, IConfiguration config) : EndpointWithoutRequest<UserProfileResponse>
+public class GetUserProfileEndpoint(ApplicationDbContext db, ISchoolCatalog schools, IConfiguration config) : EndpointWithoutRequest<UserProfileResponse>
 {
     public override void Configure()
     {
@@ -48,10 +51,12 @@ public class GetUserProfileEndpoint(ApplicationDbContext db, IConfiguration conf
         var response = new UserProfileResponse
         {
             UserId = user.Id,
-            Email = user.JuniaEmail,
+            SchoolId = user.SchoolId,
+            Email = user.Email,
             CalendarFeedUrl = calendarUrl,
             LastUpdated = user.LastUpdate ?? null,
-            ExamAccommodations = user.ExamAccommodations
+            ExamAccommodations = user.ExamAccommodations,
+            SupportsExamAccommodations = schools.GetById(user.SchoolId)?.SupportsExamAccommodations ?? false
         };
 
         await Send.OkAsync(response, ct);

@@ -4,7 +4,8 @@ using AurionCal.Api.Services.Interfaces;
 using Ical.Net.CalendarComponents;
 using Microsoft.EntityFrameworkCore;
 using CalendarEvent = AurionCal.Api.Entities.CalendarEvent;
-using AurionCal.Api.Services.Formatters;
+using AurionCal.Api.Schools;
+using AurionCal.Api.Services.Formatting;
 using Ical.Net;
 using Ical.Net.Serialization;
 using AurionCal.Api.Entities;
@@ -16,12 +17,17 @@ public class CalendarService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IEncryptionService _keyVaultService;
     private readonly ILogger<CalendarService> _logger;
+    private readonly ISchoolCatalog _schools;
+    private readonly IEventFormatterFactory _formatters;
 
     // Cache pour les SemaphoreSlim pour éviter de les recréer constamment
     private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _locks = new();
 
-    public CalendarService(IEncryptionService keyVaultService, IServiceScopeFactory scopeFactory, ILogger<CalendarService> logger)
+    public CalendarService(IEncryptionService keyVaultService, IServiceScopeFactory scopeFactory, ILogger<CalendarService> logger,
+        ISchoolCatalog schools, IEventFormatterFactory formatters)
     {
+        _schools = schools;
+        _formatters = formatters;
         _keyVaultService = keyVaultService;
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -53,15 +59,22 @@ public class CalendarService
                 return;
             }
 
-            var apiService = scope.ServiceProvider.GetRequiredService<MauriaApiService>();
+            var school = _schools.GetById(scopedUser.SchoolId);
+            if (school is null)
+            {
+                _logger.LogError("Unknown school '{SchoolId}' for user {UserId}", scopedUser.SchoolId, userId);
+                return;
+            }
+
+            var mauriaClient = scope.ServiceProvider.GetRequiredService<IMauriaClient>();
             var notifier = scope.ServiceProvider.GetRequiredService<RefreshFailureNotifier>();
 
-            var decryptedPass = await _keyVaultService.DecryptAsync(scopedUser.JuniaPassword, c);
+            var decryptedPass = await _keyVaultService.DecryptAsync(scopedUser.Password, c);
 
             GetPlanningResponse? result;
             try
             {
-                result = await apiService.GetPlanningAsync(scopedUser.JuniaEmail, decryptedPass, c);
+                result = await mauriaClient.GetPlanningAsync(school, scopedUser.Email, decryptedPass, c);
             }
             catch (Exception ex)
             {
@@ -155,7 +168,7 @@ public class CalendarService
         if (user.RefreshStatus is not { ConsecutiveFailureCount: >= threshold })
             return;
 
-        await notifier.SendDataFetchErrorAsync(user.JuniaEmail, user.LastUpdate, c);
+        await notifier.SendDataFetchErrorAsync(user.Email, user.LastUpdate, c);
         user.RefreshStatus!.FailureEmailSentUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(c);
     }
@@ -175,14 +188,15 @@ public class CalendarService
     private static string Truncate(string value, int max)
         => value.Length <= max ? value : value[..max];
 
-    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents, bool examAccommodations = false)
+    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents, School school, bool examAccommodations = false)
     {
+        var formatter = _formatters.For(school);
         var calendar = new Calendar();
         calendar.AddTimeZone(new VTimeZone("Europe/Paris"));
 
         foreach (var evt in planningEvents)
         {
-            calendar.Events.Add(CalendarEventFormatter.ToIcalEvent(evt, examAccommodations));
+            calendar.Events.Add(formatter.Format(evt, examAccommodations));
         }
 
         return new CalendarSerializer().SerializeToString(calendar);

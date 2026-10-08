@@ -1,8 +1,10 @@
 using AurionCal.Api.Contexts;
+using AurionCal.Api.Schools;
 using AurionCal.Api.Services;
 using FastEndpoints;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 
 namespace AurionCal.Api.Endpoints;
 
@@ -15,7 +17,9 @@ public class GetCalendarFeedRequest
 public class GetCalendarFeedEndpoint(
     ApplicationDbContext db,
     CalendarService calendarService,
-    IMemoryCache cache)
+    ISchoolCatalog schools,
+    IMemoryCache cache,
+    ILogger<GetCalendarFeedEndpoint> logger)
     : Endpoint<GetCalendarFeedRequest>
 {
     public override void Configure()
@@ -33,6 +37,14 @@ public class GetCalendarFeedEndpoint(
 
         if (user == null || user.CalendarToken != r.Token)
         {
+            await Send.NotFoundAsync(c);
+            return;
+        }
+
+        var school = schools.GetById(user.SchoolId);
+        if (school is null)
+        {
+            logger.LogError("Unknown school '{SchoolId}' for user {UserId}", user.SchoolId, user.Id);
             await Send.NotFoundAsync(c);
             return;
         }
@@ -60,9 +72,11 @@ public class GetCalendarFeedEndpoint(
             }).ToList() ?? [];
         });
 
-        var feed = calendarService.GenerateCalendarFeed(planningEvents, user.ExamAccommodations);
+        var feed = calendarService.GenerateCalendarFeed(planningEvents, school, user.ExamAccommodations && school.SupportsExamAccommodations);
 
-        HttpContext.Response.Headers.Append("Content-Disposition", "attachment; filename=\"Planning Junia.ics\"");
+        var contentDisposition = new ContentDispositionHeaderValue("attachment");
+        contentDisposition.SetHttpFileName($"Planning {school.Name}.ics");
+        HttpContext.Response.Headers.Append(HeaderNames.ContentDisposition, contentDisposition.ToString());
         HttpContext.Response.ContentType = "text/calendar";
 
         await Send.StringAsync(feed, 200, "text/calendar", c);

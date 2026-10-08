@@ -27,7 +27,7 @@ public class ApplicationDbContext : DbContext
         UserRefreshStatus.Configure(modelBuilder.Entity<UserRefreshStatus>());
 
         modelBuilder.Entity<User>()
-            .HasIndex(u => u.JuniaEmail)
+            .HasIndex(u => u.Email)
             .IsUnique();
     }
 }

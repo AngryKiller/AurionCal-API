@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using AurionCal.Api.Contexts;
+using AurionCal.Api.Schools;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ public class SetExamAccommodationsRequest
     public bool Enabled { get; set; }
 }
 
-public class SetExamAccommodationsEndpoint(ApplicationDbContext db) : Endpoint<SetExamAccommodationsRequest>
+public class SetExamAccommodationsEndpoint(ApplicationDbContext db, ISchoolCatalog schools) : Endpoint<SetExamAccommodationsRequest>
 {
     public override void Configure()
     {
@@ -31,6 +32,13 @@ public class SetExamAccommodationsEndpoint(ApplicationDbContext db) : Endpoint<S
         if (user is null)
         {
             await Send.NotFoundAsync(ct);
+            return;
+        }
+
+        if (r.Enabled && schools.GetById(user.SchoolId)?.SupportsExamAccommodations != true)
+        {
+            AddError("EXAM_ACCOMMODATIONS_NOT_SUPPORTED");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, ct);
             return;
         }
 

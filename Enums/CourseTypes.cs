@@ -8,6 +8,7 @@ public static class RawCourseTypes
     public const string Projet = "PROJET";
     public const string Epreuve = "est-epreuve";
     public const string EpreuveAlt = "EXAM_SURV";
+    public const string Rattrapage = "RATTRAPAGE_SURV";
     public const string AutoAppr = "AUTO_APPR";
     public const string Reunion = "REUNION";
     public const string Conference = "CONF";
@@ -21,6 +22,7 @@ public enum CourseType
     CoursTp,
     Projet,
     Epreuve,
+    Rattrapage,
     AutoAppr,
     Reunion,
     Conference,

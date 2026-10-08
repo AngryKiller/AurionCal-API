@@ -1,5 +1,6 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Entities;
+using AurionCal.Api.Schools;
 using AurionCal.Api.Services;
 using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
@@ -10,11 +11,13 @@ namespace AurionCal.Api.Endpoints;
 
 public class RegisterUserRequest
 {
+    /// <summary>School id; the default school is used when absent.</summary>
+    public string? SchoolId { get; set; }
     public string Email { get; set; }
     public string Password { get; set; }
 }
 
-public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiService, IEncryptionService keyVaultService,
+public class RegisterUserEndpoint(ApplicationDbContext db, IMauriaClient mauriaClient, ISchoolCatalog schools, IEncryptionService keyVaultService,
     CalendarService calendarService)
     : Endpoint<RegisterUserRequest, RegisterUserResponse>
 {
@@ -40,11 +43,28 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
     
     public override async Task HandleAsync(RegisterUserRequest r, CancellationToken c)
     {
-        var result = await apiService.CheckLoginInfoAsync(r.Email, r.Password, c);
+        var email = EmailNormalizer.Normalize(r.Email);
+
+        var school = schools.Resolve(r.SchoolId);
+        if (school is null)
+        {
+            AddError(x => x.SchoolId!, "UNKNOWN_SCHOOL");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, c);
+            return;
+        }
+
+        if (!schools.EmailMatches(school, email))
+        {
+            AddError(x => x.Email, "EMAIL_DOMAIN_NOT_ALLOWED");
+            await Send.ErrorsAsync(StatusCodes.Status400BadRequest, c);
+            return;
+        }
+
+        var result = await mauriaClient.CheckLoginAsync(school, email, r.Password, c);
 
         if (result.Success)
         {
-            var exists = await db.Users.AnyAsync(u => u.JuniaEmail == r.Email, cancellationToken: c);
+            var exists = await db.Users.AnyAsync(u => u.Email == email, cancellationToken: c);
             if (exists)
             {
                 AddError(x => x.Email, "ACCOUNT_ALREADY_EXISTS");
@@ -55,8 +75,9 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                JuniaEmail = r.Email,
-                JuniaPassword = await keyVaultService.EncryptAsync(r.Password, c),
+                SchoolId = school.Id,
+                Email = email,
+                Password = await keyVaultService.EncryptAsync(r.Password, c),
                 CalendarToken = Guid.NewGuid()
             };
             db.Users.Add(user);
