@@ -35,8 +35,8 @@ public class GetPlanningRequest
     public string BaseUrl { get; set; }
     public string Email { get; set; }
     public string Password { get; set; }
-    public DateTimeOffset StartDate { get; set; }
-    public DateTimeOffset EndDate { get; set; }
+    public long StartDate { get; set; }
+    public long EndDate { get; set; }
 }
 
 public class GetPlanningResponse

@@ -13,6 +13,7 @@ public sealed class EventFormatterFactory : IEventFormatterFactory
         {
             [DefaultParserId] = school => new DefaultEventFormatter(school),
             ["junia"] = school => new JuniaEventFormatter(school),
+            ["istc"] = school => new IstcEventFormatter(school),
         };
 
     private readonly ILogger<EventFormatterFactory> _logger;
