@@ -1,0 +1,15 @@
+{
+  "Schools": {
+    "DefaultSchoolId": "junia",
+    "Items": [
+      {
+        "Id": "junia",
+        "Name": "Junia",
+        "AurionBaseUrl": "https://aurion.junia.com",
+        "EmailDomains": [ "junia.com", "student.junia.com" ],
+        "SupportsExamAccommodations": true,
+        "ParserId": "junia"
+      }
+    ]
+  }
+}

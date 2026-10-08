@@ -1,4 +1,5 @@
 using AurionCal.Api.Contexts;
+using AurionCal.Api.Schools;
 using AurionCal.Api.Services;
 using AurionCal.Api.Services.Interfaces;
 using FastEndpoints;
@@ -31,7 +32,8 @@ public class CheckLoginInfoRequestValidator : Validator<CheckLoginInfoRequest>
 }
 
 public class CheckLoginInfoEndpoint(
-    MauriaApiService apiService,
+    IMauriaClient mauriaClient,
+    ISchoolCatalog schools,
     ApplicationDbContext db,
     ILogger<CheckLoginInfoEndpoint> logger,
     IConfiguration config,
@@ -61,8 +63,10 @@ public class CheckLoginInfoEndpoint(
 
         try
         {
+            var email = EmailNormalizer.Normalize(r.Email);
+
             var user = await db.Users
-                .FirstOrDefaultAsync(u => u.JuniaEmail == r.Email, c);
+                .FirstOrDefaultAsync(u => u.Email == email, c);
 
             if (user is null)
             {
@@ -70,7 +74,16 @@ public class CheckLoginInfoEndpoint(
                 return;
             }
 
-            var result = await apiService.CheckLoginInfoAsync(r.Email, r.Password, c);
+            // The school is taken from the stored user; an unknown school means inconsistent data
+            var school = schools.GetById(user.SchoolId);
+            if (school is null)
+            {
+                logger.LogError("Unknown school '{SchoolId}' for user {UserId}. TraceId={TraceId}", user.SchoolId, user.Id, HttpContext.TraceIdentifier);
+                await Send.UnauthorizedAsync(c);
+                return;
+            }
+
+            var result = await mauriaClient.CheckLoginAsync(school, email, r.Password, c);
 
             if (!result.Success)
             {
@@ -80,10 +93,10 @@ public class CheckLoginInfoEndpoint(
 
             try
             {
-                var currentDecryptedPassword = await encryptionService.DecryptAsync(user.JuniaPassword, c);
+                var currentDecryptedPassword = await encryptionService.DecryptAsync(user.Password, c);
                 if (currentDecryptedPassword != r.Password)
                 {
-                    user.JuniaPassword = await encryptionService.EncryptAsync(r.Password, c);
+                    user.Password = await encryptionService.EncryptAsync(r.Password, c);
                     await db.SaveChangesAsync(c);
                     logger.LogInformation("Mot de passe mis à jour localement pour {Email}. TraceId={TraceId}", r.Email, HttpContext.TraceIdentifier);
                     _ = Task.Run(async () =>
