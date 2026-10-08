@@ -45,6 +45,7 @@ public class GetCalendarFeedEndpoint(
         }
 
         var cacheKey = $"planning:{r.UserId}";
+        var parisTz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Paris");
         var planningEvents = await cache.GetOrCreateAsync(cacheKey, async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
@@ -53,8 +54,8 @@ public class GetCalendarFeedEndpoint(
             {
                 Id = e.Id,
                 Title = e.Title,
-                Start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.Start.DateTime, DateTimeKind.Utc), TimeZoneInfo.Local),
-                End = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.End.DateTime, DateTimeKind.Utc), TimeZoneInfo.Local),
+                Start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.Start.DateTime, DateTimeKind.Utc), parisTz),
+                End = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.End.DateTime, DateTimeKind.Utc), parisTz),
                 ClassName = e.ClassName,
             }).ToList() ?? [];
         });
@@ -63,6 +64,7 @@ public class GetCalendarFeedEndpoint(
 
         HttpContext.Response.Headers.Append("Content-Disposition", "attachment; filename=\"Planning Junia.ics\"");
         HttpContext.Response.ContentType = "text/calendar";
+
         await Send.StringAsync(feed, 200, "text/calendar", c);
 
         if (needsRefresh)

@@ -75,7 +75,7 @@ services:
       
   mauria:
     build:
-      context: https://github.com/MauriaApp/API-v2.git
+      context: https://github.com/AngryKiller/Mauria-API.git
     container_name: mauria
     restart: unless-stopped
     networks:
