@@ -44,12 +44,14 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
 
         if (result.Success)
         {
-            var exists = await db.Users.FirstOrDefaultAsync(u => u.JuniaEmail == r.Email, cancellationToken: c);
-            if (exists != null)
+            var exists = await db.Users.AnyAsync(u => u.JuniaEmail == r.Email, cancellationToken: c);
+            if (exists)
             {
-                await Send.ForbiddenAsync(c);
+                AddError(x => x.Email, "ACCOUNT_ALREADY_EXISTS");
+                await Send.ErrorsAsync(StatusCodes.Status409Conflict, c);
                 return;
             }
+
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -58,7 +60,16 @@ public class RegisterUserEndpoint(ApplicationDbContext db, MauriaApiService apiS
                 CalendarToken = Guid.NewGuid()
             };
             db.Users.Add(user);
-            await db.SaveChangesAsync(c);
+            try
+            {
+                await db.SaveChangesAsync(c);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("unique", StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                AddError(x => x.Email, "ACCOUNT_ALREADY_EXISTS");
+                await Send.ErrorsAsync(StatusCodes.Status409Conflict, c);
+                return;
+            }
             await Send.ResponseAsync(
                 new RegisterUserResponse { UserId = user.Id }, 200, c);
             _ = Task.Run(async () => await calendarService.RefreshCalendarEventsAsync(user.Id, CancellationToken.None), CancellationToken.None);

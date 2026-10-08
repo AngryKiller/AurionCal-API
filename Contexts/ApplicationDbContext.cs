@@ -25,5 +25,9 @@ public class ApplicationDbContext : DbContext
     {
         CalendarEvent.Configure(modelBuilder.Entity<CalendarEvent>());
         UserRefreshStatus.Configure(modelBuilder.Entity<UserRefreshStatus>());
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.JuniaEmail)
+            .IsUnique();
     }
 }
