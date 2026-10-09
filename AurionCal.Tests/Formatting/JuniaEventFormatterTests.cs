@@ -20,6 +20,26 @@ public class JuniaEventFormatterTests
     }
 
     [Fact]
+    public void ProjetAutoGere_IsFormattedLikeACourse_WithItsOwnTypeName()
+    {
+        var evt = TestData.Event("IC2 C350\nProjet de fin d'année\nPROJET_AUTO_GERE\nMonsieur LAMBERT", "PROJET_AUTO_GERE");
+
+        var result = _formatter.Format(evt, false);
+
+        Assert.Equal("IC2 C350", result.Location);
+        Assert.Equal("Projet de fin d'année - Monsieur LAMBERT (Projet auto-géré)", result.Summary);
+    }
+
+    [Fact]
+    public void ProjetAutoGere_WithoutTeacher_HasNoTrailingDash()
+    {
+        var result = _formatter.Format(TestData.Event("Salle A1\nProjet web\nPROJET_AUTO_GERE", "PROJET_AUTO_GERE"), false);
+
+        Assert.Equal("Salle A1", result.Location);
+        Assert.Equal("Projet web (Projet auto-géré)", result.Summary);
+    }
+
+    [Fact]
     public void Course_WithoutTeacher_HasNoTrailingDash()
     {
         var result = _formatter.Format(TestData.Event("Salle A1\nSystèmes embarqués\nPROJET", "PROJET"), false);

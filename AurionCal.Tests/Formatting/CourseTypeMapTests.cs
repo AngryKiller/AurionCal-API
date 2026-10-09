@@ -20,6 +20,7 @@ public class CourseTypeMapTests
     [InlineData("REUNION", CourseType.Reunion)]
     [InlineData("CONF", CourseType.Conference)]
     [InlineData("TD_AUTO_GERE_PLANIFIE", CourseType.TdAutoGere)]
+    [InlineData("PROJET_AUTO_GERE", CourseType.ProjetAutoGere)]
     public void Parse_KnownCodes(string raw, CourseType expected)
         => Assert.Equal(expected, _map.Parse(raw));
 
@@ -56,6 +57,13 @@ public class CourseTypeMapTests
     }
 
     [Fact]
+    public void ProjetAutoGere_NormalizesVariantsAndDisplaysAsProjetAutoGere()
+    {
+        Assert.Equal(CourseType.ProjetAutoGere, _map.Parse("projet-auto-gere"));
+        Assert.Equal("Projet auto-géré", _map.ToDisplayNameFromRaw("PROJET_AUTO_GERE"));
+    }
+
+    [Fact]
     public void For_SchoolOverrides_DoNotLeakIntoOtherMaps()
     {
         CourseTypeMap.For(new ParsingOptions { ClassNames = new() { ["LAB"] = CourseType.CoursTp } });
@@ -68,6 +76,7 @@ public class CourseTypeMapTests
     [InlineData("EXAM_SURV", "Épreuve")]
     [InlineData("RATTRAPAGE_SURV", "Rattrapage")]
     [InlineData("CONF", "Conférence")]
+    [InlineData("PROJET_AUTO_GERE", "Projet auto-géré")]
     [InlineData(null, "Autre")]
     [InlineData("", "Autre")]
     public void ToDisplayNameFromRaw_KnownOrEmpty(string? raw, string expected)

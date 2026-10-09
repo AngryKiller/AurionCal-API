@@ -8,3 +8,6 @@ riderModule.iml
 .DS_Store
 .env
 .vscode
+
+# School logos provided by the host at deploy time (see compose.yaml)
+school-logos/
