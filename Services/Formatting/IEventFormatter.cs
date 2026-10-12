@@ -9,7 +9,10 @@ namespace AurionCal.Api.Services.Formatting;
 /// </summary>
 public interface IEventFormatter
 {
-    IcalEvent Format(CalendarEvent evt, bool examAccommodations);
+    /// <summary>Whether the event belongs in the feed for the given options (some events can be hidden by the user).</summary>
+    bool IsVisible(CalendarEvent evt, FormatOptions options);
+
+    IcalEvent Format(CalendarEvent evt, FormatOptions options);
 }
 
 /// <summary>

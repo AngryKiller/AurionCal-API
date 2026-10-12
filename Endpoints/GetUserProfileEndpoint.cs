@@ -15,6 +15,8 @@ public class UserProfileResponse
     public DateTime? LastUpdated { get; set; }
     public bool ExamAccommodations { get; set; }
     public bool SupportsExamAccommodations { get; set; }
+    public bool ShowWorkPlacement { get; set; }
+    public bool SupportsWorkPlacement { get; set; }
 }
 
 public class GetUserProfileEndpoint(ApplicationDbContext db, ISchoolCatalog schools, IConfiguration config) : EndpointWithoutRequest<UserProfileResponse>
@@ -56,7 +58,9 @@ public class GetUserProfileEndpoint(ApplicationDbContext db, ISchoolCatalog scho
             CalendarFeedUrl = calendarUrl,
             LastUpdated = user.LastUpdate ?? null,
             ExamAccommodations = user.ExamAccommodations,
-            SupportsExamAccommodations = schools.GetById(user.SchoolId)?.SupportsExamAccommodations ?? false
+            SupportsExamAccommodations = schools.GetById(user.SchoolId)?.SupportsExamAccommodations ?? false,
+            ShowWorkPlacement = user.ShowWorkPlacement,
+            SupportsWorkPlacement = schools.GetById(user.SchoolId)?.SupportsWorkPlacement ?? false
         };
 
         await Send.OkAsync(response, ct);

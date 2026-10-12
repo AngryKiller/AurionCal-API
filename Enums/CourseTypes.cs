@@ -14,6 +14,7 @@ public static class RawCourseTypes
     public const string Conference = "CONF";
     public const string TdAutoGere = "TD_AUTO_GERE_PLANIFIE";
     public const string ProjetAutoGere = "PROJET_AUTO_GERE";
+    public const string Entreprise = "ENTREPRISE";
 }
 
 public enum CourseType
@@ -28,6 +29,7 @@ public enum CourseType
     Reunion,
     Conference,
     TdAutoGere,
-    ProjetAutoGere
+    ProjetAutoGere,
+    Entreprise
 }
 

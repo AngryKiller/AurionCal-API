@@ -1,5 +1,6 @@
 using AurionCal.Api.Contexts;
 using AurionCal.Api.Schools;
+using AurionCal.Api.Services.Formatting;
 using AurionCal.Api.Services;
 using FastEndpoints;
 using Microsoft.Extensions.Caching.Memory;
@@ -72,7 +73,10 @@ public class GetCalendarFeedEndpoint(
             }).ToList() ?? [];
         });
 
-        var feed = calendarService.GenerateCalendarFeed(planningEvents, school, user.ExamAccommodations && school.SupportsExamAccommodations);
+        var options = new FormatOptions(
+            ExamAccommodations: user.ExamAccommodations && school.SupportsExamAccommodations,
+            ShowWorkPlacement: user.ShowWorkPlacement && school.SupportsWorkPlacement);
+        var feed = calendarService.GenerateCalendarFeed(planningEvents, school, options);
 
         var contentDisposition = new ContentDispositionHeaderValue("attachment");
         contentDisposition.SetHttpFileName($"Planning {school.Name}.ics");

@@ -9,6 +9,7 @@ public class SchoolSummary
     public string Name { get; set; } = string.Empty;
     public List<string> EmailDomains { get; set; } = [];
     public bool SupportsExamAccommodations { get; set; }
+    public bool SupportsWorkPlacement { get; set; }
 }
 
 public class GetSchoolsResponse
@@ -34,7 +35,7 @@ public class GetSchoolsEndpoint(ISchoolCatalog schools) : EndpointWithoutRequest
         {
             DefaultSchoolId = schools.Default.Id,
             Schools = schools.All
-                .Select(s => new SchoolSummary { Id = s.Id, Name = s.Name, EmailDomains = s.EmailDomains, SupportsExamAccommodations = s.SupportsExamAccommodations })
+                .Select(s => new SchoolSummary { Id = s.Id, Name = s.Name, EmailDomains = s.EmailDomains, SupportsExamAccommodations = s.SupportsExamAccommodations, SupportsWorkPlacement = s.SupportsWorkPlacement })
                 .ToList()
         };
 

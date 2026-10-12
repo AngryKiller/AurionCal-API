@@ -1,5 +1,8 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
+using AurionCal.Api.Enums;
 using AurionCal.Api.Schools;
+using CalendarEvent = AurionCal.Api.Entities.CalendarEvent;
 using IcalEvent = Ical.Net.CalendarComponents.CalendarEvent;
 
 namespace AurionCal.Api.Services.Formatting;
@@ -8,13 +11,21 @@ namespace AurionCal.Api.Services.Formatting;
 /// Junia conventions: courses as "Location / Name / Type / Teacher",
 /// exams with an "Horaire TT" (extra time) line, make-up exams and conferences.
 /// </summary>
-public sealed class JuniaEventFormatter(School school) : EventFormatterBase(school)
+public sealed partial class JuniaEventFormatter(School school) : EventFormatterBase(school)
 {
     private const string AccommodationsPrefix = "Horaire TT";
     private const string ExamCode = "EXAM_SURV";
     private const string RattrapageCode = "RATTRAPAGE_SURV";
 
     private static readonly string[] TimeFormats = ["H'h'mm", "H'h'm", "H'h'"];
+
+    // Work placements (apprentices) are hidden unless the user asked for them
+    public override bool IsVisible(CalendarEvent evt, FormatOptions options)
+        => CourseTypes.Parse(evt.ClassName) != CourseType.Entreprise || options.ShowWorkPlacement;
+
+    // Layout: Title / ENTREPRISE. There is no room, and the title already says what it is.
+    protected override IcalEvent FormatEntreprise(EventParts p)
+        => CreateEvent(p.Event, p.FirstLine, string.Empty);
 
     protected override IcalEvent FormatConference(EventParts p)
     {
@@ -33,7 +44,12 @@ public sealed class JuniaEventFormatter(School school) : EventFormatterBase(scho
         // Extract the "Horaire TT" line before any other filtering
         var accommodationsLine = p.Lines.FirstOrDefault(IsAccommodationsLine);
 
-        var filteredLines = RemoveLinesContaining(p.Lines.Where(l => !IsAccommodationsLine(l)), ExamCode);
+        // The teacher is set apart from the lines that describe the exam: without this a lone teacher line
+        // would be mistaken for the exam name (no room assigned yet: "Title / EXAM_SURV / Teacher").
+        var teacher = p.Lines.FirstOrDefault(IsTeacherLine);
+
+        var filteredLines = RemoveLinesContaining(
+            p.Lines.Where(l => !IsAccommodationsLine(l) && !IsTeacherLine(l)), ExamCode);
 
         var (location, examName) = filteredLines switch
         {
@@ -51,9 +67,9 @@ public sealed class JuniaEventFormatter(School school) : EventFormatterBase(scho
             _ => (string.Empty, p.FirstLine)
         };
 
-        var summary = BuildSummary(examName, p.Event.ClassName);
+        var summary = BuildSummary(teacher is null ? examName : $"{examName} - {teacher}", p.Event.ClassName);
 
-        if (p.ExamAccommodations && accommodationsLine is not null
+        if (p.Options.ExamAccommodations && accommodationsLine is not null
             && TryParseAccommodationsTimes(accommodationsLine, p.Event.Start.DateTime, out var start, out var end))
         {
             return CreateEvent(p.Event, summary, location, start, end);
@@ -67,6 +83,12 @@ public sealed class JuniaEventFormatter(School school) : EventFormatterBase(scho
 
     private static bool IsAccommodationsLine(string line)
         => line.StartsWith(AccommodationsPrefix, StringComparison.OrdinalIgnoreCase);
+
+    // "Monsieur LAMBERT", "Madame DEHONDT", "Mme X", "M. X"...
+    private static bool IsTeacherLine(string line) => TeacherLine().IsMatch(line);
+
+    [GeneratedRegex(@"^(Monsieur|Madame|Mme|Mlle|Mr|M\.)\s+\S", RegexOptions.IgnoreCase)]
+    private static partial Regex TeacherLine();
 
     private static bool TryParseAccommodationsTimes(string line, DateTime eventDate, out DateTime start, out DateTime end)
     {

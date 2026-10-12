@@ -21,6 +21,7 @@ public class CourseTypeMapTests
     [InlineData("CONF", CourseType.Conference)]
     [InlineData("TD_AUTO_GERE_PLANIFIE", CourseType.TdAutoGere)]
     [InlineData("PROJET_AUTO_GERE", CourseType.ProjetAutoGere)]
+    [InlineData("ENTREPRISE", CourseType.Entreprise)]
     public void Parse_KnownCodes(string raw, CourseType expected)
         => Assert.Equal(expected, _map.Parse(raw));
 
