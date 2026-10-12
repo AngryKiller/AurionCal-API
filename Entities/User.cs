@@ -10,5 +10,6 @@ public class User
     public virtual List<CalendarEvent> Planning { get; set; }
     public Guid CalendarToken { get; set; }
     public bool ExamAccommodations { get; set; }
+    public bool ShowWorkPlacement { get; set; }
     public virtual UserRefreshStatus? RefreshStatus { get; set; }
 }

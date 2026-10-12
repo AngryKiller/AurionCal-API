@@ -65,6 +65,7 @@ When a planning refresh is triggered for a user:
 - Calendar clients (Google Calendar, Outlook, Apple Calendar, etc.) can subscribe to this URL.
 - Events are converted to iCal by the **event formatter of the user's school** (see *Schools* below). The file is named `Planning <school name>.ics`.
 - For schools that support it (`SupportsExamAccommodations`), users can enable the extra-time exam schedule with `PATCH /api/user/exam-accommodations`; the feed then uses the extra-time hours found in exam titles.
+- For schools that support it (`SupportsWorkPlacement`), apprentices can choose to show their work placements (`ENTREPRISE` events) with `PATCH /api/user/work-placement`. They are hidden by default.
 - The feed is **read-only**:
   - AurionCal-API never accepts write operations through ICS.
   - All write operations go through the HTTP API and Aurion itself.
@@ -101,6 +102,7 @@ Supported schools are declared in `schools.json` and validated at startup (the A
 | `AurionBaseUrl` | Aurion URL sent to Mauria (`baseUrl` field) with every login and planning request. It only comes from this file, never from a client. |
 | `EmailDomains` | Accepted email domains. A `*.` prefix accepts subdomains (`*.school.edu`, but not `school.edu`). |
 | `SupportsExamAccommodations` | Whether the extra-time exam schedule option is available (defaults to `false`). |
+| `SupportsWorkPlacement` | Whether users can choose to display work placements in their feed (defaults to `false`). |
 | `ParserId` | Event formatter to use (defaults to `default`). |
 | `Parsing.ClassNames` | Optional overrides of the Aurion `ClassName` -> event type mapping. |
 
@@ -108,11 +110,12 @@ Supported schools are declared in `schools.json` and validated at startup (the A
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/schools` | Public list of schools (`id`, `name`, `emailDomains`, `supportsExamAccommodations`) and `defaultSchoolId`. The Aurion URL is not exposed. |
+| `GET /api/schools` | Public list of schools (`id`, `name`, `emailDomains`, `supportsExamAccommodations`, `supportsWorkPlacement`) and `defaultSchoolId`. The Aurion URL is not exposed. |
 | `POST /api/register` | Takes `email`, `password` and an optional `schoolId`. Errors: `UNKNOWN_SCHOOL`, `EMAIL_DOMAIN_NOT_ALLOWED` (400), `ACCOUNT_ALREADY_EXISTS` (409). |
 | `POST /api/check-aurion-auth` | Takes `email` and `password`. The school is found from the user. |
-| `GET /api/user/profile` | Includes `schoolId` and `supportsExamAccommodations`. |
+| `GET /api/user/profile` | Includes `schoolId`, `supportsExamAccommodations`, `showWorkPlacement` and `supportsWorkPlacement`. |
 | `PATCH /api/user/exam-accommodations` | Rejected (400) when the user's school does not support the option. |
+| `PATCH /api/user/work-placement` | Shows or hides the work placements in the feed. Rejected (400, `WORK_PLACEMENT_NOT_SUPPORTED`) when enabling for a school that does not support it. |
 
 ### Event formatting
 

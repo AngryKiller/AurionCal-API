@@ -23,6 +23,9 @@ public sealed record School
     /// <summary>Whether the extra-time exam schedule option is available for this school.</summary>
     public bool SupportsExamAccommodations { get; init; }
 
+    /// <summary>Whether users can choose to display the work placements (apprentices) in their feed.</summary>
+    public bool SupportsWorkPlacement { get; init; }
+
     /// <summary>Key of the event formatter to use (see <c>EventFormatterFactory</c>).</summary>
     public string ParserId { get; init; } = "default";
 

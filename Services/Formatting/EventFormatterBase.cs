@@ -14,7 +14,7 @@ public sealed record EventParts(
     CourseType Type,
     string FirstLine,
     string[] Lines,
-    bool ExamAccommodations);
+    FormatOptions Options);
 
 /// <summary>
 /// Common base for formatters: title splitting and iCal event construction.
@@ -35,20 +35,23 @@ public abstract class EventFormatterBase : IEventFormatter
 
     protected CourseTypeMap CourseTypes { get; }
 
-    public IcalEvent Format(CalendarEvent evt, bool examAccommodations)
+    public virtual bool IsVisible(CalendarEvent evt, FormatOptions options) => true;
+
+    public IcalEvent Format(CalendarEvent evt, FormatOptions options)
     {
         var lines = evt.Title
             .Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (lines.Length == 0) return CreateEvent(evt, "Sans titre", string.Empty);
 
-        var parts = new EventParts(evt, CourseTypes.Parse(evt.ClassName), lines[0], lines[1..], examAccommodations);
+        var parts = new EventParts(evt, CourseTypes.Parse(evt.ClassName), lines[0], lines[1..], options);
 
         return parts.Type switch
         {
             CourseType.Epreuve => FormatExam(parts),
             CourseType.Rattrapage => FormatRattrapage(parts),
             CourseType.Conference => FormatConference(parts),
+            CourseType.Entreprise => FormatEntreprise(parts),
             _ => FormatCourse(parts)
         };
     }
@@ -58,6 +61,8 @@ public abstract class EventFormatterBase : IEventFormatter
     protected virtual IcalEvent FormatRattrapage(EventParts p) => FormatCourse(p);
 
     protected virtual IcalEvent FormatConference(EventParts p) => FormatCourse(p);
+
+    protected virtual IcalEvent FormatEntreprise(EventParts p) => FormatCourse(p);
 
     /// <summary>Generic format: [Location, Name, Teacher] with the type removed from the lines.</summary>
     protected virtual IcalEvent FormatCourse(EventParts p)

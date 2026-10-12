@@ -8,6 +8,7 @@
         "AurionBaseUrl": "https://aurion.junia.com",
         "EmailDomains": [ "junia.com", "student.junia.com" ],
         "SupportsExamAccommodations": true,
+        "SupportsWorkPlacement": true,
         "ParserId": "junia"
       },
       {

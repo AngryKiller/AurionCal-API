@@ -15,9 +15,9 @@ internal static class TestData
         SupportsExamAccommodations = true
     };
 
-    public static CalendarEvent Event(string title, string className, int startHour = 8, int endHour = 10) => new()
+    public static CalendarEvent Event(string title, string className, int startHour = 8, int endHour = 10, string id = "evt-1") => new()
     {
-        Id = "evt-1",
+        Id = id,
         Title = title,
         ClassName = className,
         Start = new DateTimeOffset(2026, 10, 12, startHour, 0, 0, TimeSpan.Zero),

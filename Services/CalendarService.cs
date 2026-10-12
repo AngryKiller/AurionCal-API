@@ -188,15 +188,17 @@ public class CalendarService
     private static string Truncate(string value, int max)
         => value.Length <= max ? value : value[..max];
 
-    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents, School school, bool examAccommodations = false)
+    public string GenerateCalendarFeed(IEnumerable<CalendarEvent> planningEvents, School school, FormatOptions? options = null)
     {
+        options ??= FormatOptions.Default;
         var formatter = _formatters.For(school);
         var calendar = new Calendar();
         calendar.AddTimeZone(new VTimeZone("Europe/Paris"));
 
         foreach (var evt in planningEvents)
         {
-            calendar.Events.Add(formatter.Format(evt, examAccommodations));
+            if (!formatter.IsVisible(evt, options)) continue;
+            calendar.Events.Add(formatter.Format(evt, options));
         }
 
         return new CalendarSerializer().SerializeToString(calendar);

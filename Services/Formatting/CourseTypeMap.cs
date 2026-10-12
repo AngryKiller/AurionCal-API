@@ -24,6 +24,7 @@ public sealed class CourseTypeMap
             [RawCourseTypes.Conference] = CourseType.Conference,
             [RawCourseTypes.TdAutoGere] = CourseType.TdAutoGere,
             [RawCourseTypes.ProjetAutoGere] = CourseType.ProjetAutoGere,
+            [RawCourseTypes.Entreprise] = CourseType.Entreprise,
         };
 
     private static readonly IReadOnlyDictionary<CourseType, string> DisplayNames =
@@ -40,6 +41,7 @@ public sealed class CourseTypeMap
             [CourseType.Conference] = "Conférence",
             [CourseType.TdAutoGere] = "TD Auto-géré",
             [CourseType.ProjetAutoGere] = "Projet auto-géré",
+            [CourseType.Entreprise] = "Entreprise",
         };
 
     private readonly Dictionary<string, CourseType> _rawToType;
