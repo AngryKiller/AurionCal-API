@@ -11,6 +11,7 @@ public class CourseTypeMapTests
     [Theory]
     [InlineData("COURS_TD", CourseType.CoursTd)]
     [InlineData("TD", CourseType.CoursTd)]
+    [InlineData("CI", CourseType.CoursTd)]
     [InlineData("TP", CourseType.CoursTp)]
     [InlineData("PROJET", CourseType.Projet)]
     [InlineData("est-epreuve", CourseType.Epreuve)]
@@ -74,6 +75,7 @@ public class CourseTypeMapTests
 
     [Theory]
     [InlineData("COURS_TD", "TD")]
+    [InlineData("CI", "TD")]
     [InlineData("EXAM_SURV", "Épreuve")]
     [InlineData("RATTRAPAGE_SURV", "Rattrapage")]
     [InlineData("CONF", "Conférence")]

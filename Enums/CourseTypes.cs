@@ -4,6 +4,7 @@ public static class RawCourseTypes
 {
     public const string CoursTd = "COURS_TD";
     public const string Td = "TD";
+    public const string Ci = "CI"; // Seems related to international students
     public const string CoursTp = "TP";
     public const string Projet = "PROJET";
     public const string Epreuve = "est-epreuve";
