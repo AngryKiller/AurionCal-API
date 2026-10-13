@@ -20,6 +20,35 @@ public class JuniaEventFormatterTests
     }
 
     [Fact]
+    public void Ci_IsFormattedLikeATd()
+    {
+        var evt = TestData.Event("IC2 C350\nSciences de l'ingénieur\nCI\nMonsieur LAMBERT", "CI");
+
+        var result = _formatter.Format(evt, FormatOptions.Default);
+
+        Assert.Equal("IC2 C350", result.Location);
+        Assert.Equal("Sciences de l'ingénieur - Monsieur LAMBERT (TD)", result.Summary);
+    }
+
+    [Theory]
+    [InlineData("TP", "Salle A1\nProtocoles HTTP\nTP\nProf", "Protocoles HTTP - Prof (TP)")]
+    [InlineData("COURS_TD", "Salle A1\nAlgo\nCOURS_TD\nProf", "Algo - Prof (TD)")]
+    [InlineData("TD", "Salle A1\nAlgo\nCOURS_TD\nProf", "Algo - Prof (TD)")]
+    [InlineData("CI", "Salle A1\nIntelligence artificielle\nCI\nProf", "Intelligence artificielle - Prof (TD)")]
+    public void Course_OnlyDropsTheLineThatIsTheTypeCode(string className, string title, string expectedSummary)
+        => Assert.Equal(expectedSummary, _formatter.Format(TestData.Event(title, className), FormatOptions.Default).Summary);
+
+    [Fact]
+    public void Ci_ProducesTheSameEventAsTd()
+    {
+        var td = _formatter.Format(TestData.Event("Salle A1\nAlgo\nTD\nProf", "TD"), FormatOptions.Default);
+        var ci = _formatter.Format(TestData.Event("Salle A1\nAlgo\nCI\nProf", "CI"), FormatOptions.Default);
+
+        Assert.Equal(td.Summary, ci.Summary);
+        Assert.Equal(td.Location, ci.Location);
+    }
+
+    [Fact]
     public void ProjetAutoGere_IsFormattedLikeACourse_WithItsOwnTypeName()
     {
         var evt = TestData.Event("IC2 C350\nProjet de fin d'année\nPROJET_AUTO_GERE\nMonsieur LAMBERT", "PROJET_AUTO_GERE");

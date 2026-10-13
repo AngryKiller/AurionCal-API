@@ -14,6 +14,7 @@ public sealed class CourseTypeMap
         {
             [RawCourseTypes.CoursTd] = CourseType.CoursTd,
             [RawCourseTypes.Td] = CourseType.CoursTd,
+            [RawCourseTypes.Ci] = CourseType.CoursTd,
             [RawCourseTypes.CoursTp] = CourseType.CoursTp,
             [RawCourseTypes.Projet] = CourseType.Projet,
             [RawCourseTypes.Epreuve] = CourseType.Epreuve,

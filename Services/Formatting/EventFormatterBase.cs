@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using AurionCal.Api.Enums;
 using AurionCal.Api.Schools;
 using Ical.Net.DataTypes;
@@ -69,12 +70,14 @@ public abstract class EventFormatterBase : IEventFormatter
     {
         var lines = p.Lines;
 
-        // Filter out the ClassName from the remaining lines
+        // Filter out the ClassName from the remaining lines. The code must not be glued to other letters or
+        // digits ("TD" matches "COURS_TD" but "CI" does not match "Sciences de l'ingénieur").
         if (p.Type != CourseType.Unknown && !string.IsNullOrWhiteSpace(p.Event.ClassName))
         {
-            var className = p.Event.ClassName.Trim();
+            var className = new Regex(
+                $@"(?<![\p{{L}}\p{{N}}]){Regex.Escape(p.Event.ClassName.Trim())}(?![\p{{L}}\p{{N}}])", RegexOptions.IgnoreCase);
             lines = lines
-                .Where(l => !l.Contains(className, StringComparison.OrdinalIgnoreCase))
+                .Where(l => !className.IsMatch(l))
                 .ToArray();
         }
 
